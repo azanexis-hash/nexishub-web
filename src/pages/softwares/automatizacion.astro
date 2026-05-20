@@ -1,0 +1,150 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Automatización | AzaNexis"
+  description="Software AzaNexis para automatización, inteligencia artificial operativa, bots, integraciones, reportes y flujos empresariales."
+>
+  <main class="coming-page">
+    <section class="container coming-hero">
+      <a class="back-link" href="/softwares">← Volver al catálogo</a>
+
+      <span class="pill">Próximamente</span>
+
+      <h1>
+        Automatización e inteligencia artificial para procesos empresariales.
+      </h1>
+
+      <p>
+        Esta categoría estará enfocada en soluciones para automatizar tareas repetitivas,
+        conectar herramientas, generar reportes, crear asistentes internos y mejorar
+        procesos operativos con inteligencia artificial.
+      </p>
+
+      <div class="coming-grid">
+        <article>
+          <span>🤖</span>
+          <h2>AutoNexis</h2>
+          <p>
+            Automatizaciones para ventas, atención al cliente, operaciones internas,
+            recordatorios, reportes y procesos repetitivos.
+          </p>
+        </article>
+
+        <article>
+          <span>🔗</span>
+          <h2>Integraciones</h2>
+          <p>
+            Conexión entre formularios, correos, hojas de cálculo, CRM, WhatsApp,
+            bases de datos y sistemas internos.
+          </p>
+        </article>
+
+        <article>
+          <span>🧠</span>
+          <h2>IA operativa</h2>
+          <p>
+            Asistentes inteligentes para resumir información, clasificar solicitudes,
+            generar respuestas y apoyar decisiones internas.
+          </p>
+        </article>
+      </div>
+
+      <div class="coming-actions">
+        <a class="btn btn-primary" href="/#cotizacion">Solicitar automatización a la medida</a>
+        <a
+          class="btn btn-secondary"
+          href="mailto:azanexis@gmail.com?subject=Informaci%C3%B3n%20sobre%20automatizaci%C3%B3n%20AzaNexis"
+        >
+          Pedir información
+        </a>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .coming-page {
+    min-height: 100vh;
+    padding: 34px 0 90px;
+  }
+
+  .coming-hero {
+    padding: 70px 0;
+  }
+
+  .back-link {
+    display: inline-flex;
+    margin-bottom: 28px;
+    color: var(--muted);
+    font-weight: 850;
+    transition: color .18s ease;
+  }
+
+  .back-link:hover {
+    color: var(--text);
+  }
+
+  .coming-hero h1 {
+    max-width: 1100px;
+    margin: 24px 0 0;
+    font-size: clamp(48px, 8vw, 104px);
+    line-height: .88;
+    letter-spacing: -0.075em;
+  }
+
+  .coming-hero p {
+    max-width: 780px;
+    margin: 24px 0 0;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  .coming-grid {
+    margin-top: 38px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .coming-grid article {
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: 26px;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(255,106,0,.15), transparent 38%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+      rgba(17,17,20,.72);
+  }
+
+  .coming-grid span {
+    font-size: 34px;
+  }
+
+  .coming-grid h2 {
+    margin: 20px 0 0;
+    font-size: 30px;
+    letter-spacing: -0.055em;
+  }
+
+  .coming-grid p {
+    margin: 12px 0 0;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .coming-actions {
+    margin-top: 34px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  @media (max-width: 980px) {
+    .coming-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

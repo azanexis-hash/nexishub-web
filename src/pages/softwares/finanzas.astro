@@ -1,0 +1,150 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Finanzas | AzaNexis"
+  description="Software AzaNexis para finanzas, simuladores, reportes, control financiero, cobranza, flujos y análisis administrativo."
+>
+  <main class="coming-page">
+    <section class="container coming-hero">
+      <a class="back-link" href="/softwares">← Volver al catálogo</a>
+
+      <span class="pill">Planeado</span>
+
+      <h1>
+        Software financiero para control, simulación, reportes y toma de decisiones.
+      </h1>
+
+      <p>
+        Esta categoría estará enfocada en herramientas para control financiero,
+        simuladores, análisis de flujo, cobranza, reportes ejecutivos, presupuestos,
+        créditos, inversiones y seguimiento administrativo.
+      </p>
+
+      <div class="coming-grid">
+        <article>
+          <span>📊</span>
+          <h2>Finance Nexis</h2>
+          <p>
+            Panel financiero para visualizar ingresos, egresos, flujo de efectivo,
+            indicadores y reportes ejecutivos.
+          </p>
+        </article>
+
+        <article>
+          <span>💳</span>
+          <h2>Simuladores financieros</h2>
+          <p>
+            Herramientas para créditos, depósitos, amortizaciones, intereses,
+            escenarios y comparativos.
+          </p>
+        </article>
+
+        <article>
+          <span>📈</span>
+          <h2>Reportes y análisis</h2>
+          <p>
+            Generación de reportes administrativos, tendencias, alertas,
+            proyecciones y control de resultados.
+          </p>
+        </article>
+      </div>
+
+      <div class="coming-actions">
+        <a class="btn btn-primary" href="/#cotizacion">Solicitar software financiero</a>
+        <a
+          class="btn btn-secondary"
+          href="mailto:azanexis@gmail.com?subject=Informaci%C3%B3n%20sobre%20software%20financiero%20AzaNexis"
+        >
+          Pedir información
+        </a>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .coming-page {
+    min-height: 100vh;
+    padding: 34px 0 90px;
+  }
+
+  .coming-hero {
+    padding: 70px 0;
+  }
+
+  .back-link {
+    display: inline-flex;
+    margin-bottom: 28px;
+    color: var(--muted);
+    font-weight: 850;
+    transition: color .18s ease;
+  }
+
+  .back-link:hover {
+    color: var(--text);
+  }
+
+  .coming-hero h1 {
+    max-width: 1100px;
+    margin: 24px 0 0;
+    font-size: clamp(48px, 8vw, 104px);
+    line-height: .88;
+    letter-spacing: -0.075em;
+  }
+
+  .coming-hero p {
+    max-width: 780px;
+    margin: 24px 0 0;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  .coming-grid {
+    margin-top: 38px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .coming-grid article {
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: 26px;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(255,106,0,.15), transparent 38%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+      rgba(17,17,20,.72);
+  }
+
+  .coming-grid span {
+    font-size: 34px;
+  }
+
+  .coming-grid h2 {
+    margin: 20px 0 0;
+    font-size: 30px;
+    letter-spacing: -0.055em;
+  }
+
+  .coming-grid p {
+    margin: 12px 0 0;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .coming-actions {
+    margin-top: 34px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  @media (max-width: 980px) {
+    .coming-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
