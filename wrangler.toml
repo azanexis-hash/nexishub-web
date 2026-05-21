@@ -1,0 +1,7 @@
+name = "nexis-hub-web"
+type = "javascript"
+compatibility_date = "2026-05-18"
+
+[build]
+command = "npm run build"
+directory = "dist"
