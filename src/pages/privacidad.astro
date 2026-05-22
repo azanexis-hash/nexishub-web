@@ -1,0 +1,169 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Política de Privacidad | AzaNexis"
+  description="Política de privacidad de AzaNexis y NexisHub para el uso del sitio web, solicitudes de información, cotizaciones y productos de software."
+>
+  <main class="legal-page">
+    <section class="container legal-hero">
+      <a class="back-link" href="/">← Volver a AzaNexis</a>
+
+      <span class="pill">Información legal</span>
+
+      <h1>Política de Privacidad</h1>
+
+      <p>
+        Esta política explica cómo AzaNexis / NexisHub puede recopilar, usar y proteger
+        la información proporcionada por visitantes, prospectos y clientes.
+      </p>
+    </section>
+
+    <section class="container legal-card">
+      <h2>1. Responsable del sitio</h2>
+      <p>
+        AzaNexis / NexisHub es un proyecto orientado al desarrollo de software,
+        automatización, herramientas digitales y soluciones tecnológicas para profesionales,
+        negocios y empresas.
+      </p>
+
+      <h2>2. Información que podemos recopilar</h2>
+      <p>
+        Podemos recibir información básica cuando una persona solicita información,
+        cotización, soporte o compra de un producto. Esta información puede incluir nombre,
+        correo electrónico, teléfono, empresa, área de interés, tipo de software solicitado
+        y mensajes enviados voluntariamente.
+      </p>
+
+      <h2>3. Uso de la información</h2>
+      <p>
+        La información se utiliza para responder solicitudes, preparar cotizaciones,
+        brindar soporte, gestionar compras, entregar productos digitales, validar licencias
+        y mejorar la atención comercial.
+      </p>
+
+      <h2>4. Protección de datos</h2>
+      <p>
+        AzaNexis busca manejar la información con responsabilidad y aplicar buenas prácticas
+        de seguridad digital. No se vende información personal a terceros.
+      </p>
+
+      <h2>5. Servicios de terceros</h2>
+      <p>
+        En futuras etapas, la plataforma podrá integrar servicios externos para pagos,
+        autenticación, analítica, correos, almacenamiento o validación de licencias.
+        Estos servicios podrán tener sus propias políticas de privacidad.
+      </p>
+
+      <h2>6. Conservación de información</h2>
+      <p>
+        La información podrá conservarse durante el tiempo necesario para atender solicitudes,
+        dar soporte, comprobar compras, mantener licencias activas o cumplir obligaciones
+        administrativas.
+      </p>
+
+      <h2>7. Contacto</h2>
+      <p>
+        Para dudas relacionadas con privacidad o tratamiento de información, puedes escribir a:
+      </p>
+
+      <p>
+        <strong>Correo:</strong>
+        <a href="mailto:azanexis@gmail.com">azanexis@gmail.com</a>
+      </p>
+
+      <p class="legal-note">
+        Nota: Este documento es una versión inicial informativa. Antes de activar pagos,
+        usuarios, licencias o descargas protegidas, se recomienda revisión legal profesional.
+      </p>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .legal-page {
+    min-height: 100vh;
+    padding: 34px 0 90px;
+  }
+
+  .legal-hero {
+    padding: 56px 0 34px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    margin-bottom: 28px;
+    color: var(--muted);
+    font-weight: 850;
+  }
+
+  .back-link:hover {
+    color: var(--text);
+  }
+
+  .legal-hero h1 {
+    max-width: 900px;
+    margin: 22px 0 0;
+    font-size: clamp(44px, 7vw, 86px);
+    line-height: .9;
+    letter-spacing: -0.075em;
+  }
+
+  .legal-hero p {
+    max-width: 760px;
+    margin: 24px 0 0;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  .legal-card {
+    max-width: 980px;
+    padding: 34px;
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,106,0,.14), transparent 34%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+      rgba(17,17,20,.76);
+  }
+
+  .legal-card h2 {
+    margin: 30px 0 10px;
+    font-size: 25px;
+    letter-spacing: -0.035em;
+  }
+
+  .legal-card h2:first-child {
+    margin-top: 0;
+  }
+
+  .legal-card p {
+    margin: 0 0 16px;
+    color: var(--muted);
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+  .legal-card a {
+    color: #ffb067;
+    font-weight: 850;
+  }
+
+  .legal-note {
+    margin-top: 28px !important;
+    padding: 18px;
+    border: 1px solid rgba(255,106,0,.24);
+    border-radius: 18px;
+    background: rgba(255,106,0,.08);
+    color: #ffd6bd !important;
+  }
+
+  @media (max-width: 780px) {
+    .legal-card {
+      padding: 24px;
+      border-radius: 24px;
+    }
+  }
+</style>

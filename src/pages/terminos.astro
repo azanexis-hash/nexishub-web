@@ -1,0 +1,175 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Términos de Uso | AzaNexis"
+  description="Términos de uso de AzaNexis y NexisHub para visitantes, clientes y usuarios de productos de software."
+>
+  <main class="legal-page">
+    <section class="container legal-hero">
+      <a class="back-link" href="/">← Volver a AzaNexis</a>
+
+      <span class="pill">Condiciones de uso</span>
+
+      <h1>Términos de Uso</h1>
+
+      <p>
+        Estos términos establecen condiciones generales para el uso del sitio web,
+        solicitudes comerciales, productos digitales, software y servicios relacionados
+        con AzaNexis / NexisHub.
+      </p>
+    </section>
+
+    <section class="container legal-card">
+      <h2>1. Uso del sitio</h2>
+      <p>
+        Al navegar en este sitio, el usuario acepta utilizarlo de forma responsable,
+        sin intentar afectar su funcionamiento, seguridad, disponibilidad o integridad.
+      </p>
+
+      <h2>2. Información comercial</h2>
+      <p>
+        La información presentada sobre productos, precios, funcionalidades, disponibilidad
+        y condiciones comerciales puede actualizarse sin previo aviso.
+      </p>
+
+      <h2>3. Productos de software</h2>
+      <p>
+        Los productos ofrecidos por AzaNexis pueden ser software de escritorio, herramientas
+        web, sistemas personalizados, automatizaciones, módulos de gestión o servicios
+        tecnológicos asociados.
+      </p>
+
+      <h2>4. Licencias</h2>
+      <p>
+        En productos que requieran licencia, activación o validación por equipo, el cliente
+        deberá utilizar el software de acuerdo con las condiciones establecidas al momento
+        de la compra o contratación.
+      </p>
+
+      <h2>5. Pagos y entregas</h2>
+      <p>
+        Mientras el sistema automático de pagos no esté habilitado, las compras podrán
+        gestionarse de forma manual mediante contacto directo por correo. La entrega del
+        software, instaladores, claves o instrucciones podrá realizarse después de confirmar
+        el pago correspondiente.
+      </p>
+
+      <h2>6. Soporte</h2>
+      <p>
+        El soporte puede variar según el producto, tipo de licencia, etapa del software
+        y condiciones acordadas con el cliente.
+      </p>
+
+      <h2>7. Limitación de responsabilidad</h2>
+      <p>
+        AzaNexis busca desarrollar soluciones útiles, estables y profesionales. Sin embargo,
+        el usuario es responsable de validar que cada producto se ajuste a sus necesidades,
+        procesos internos y condiciones de operación.
+      </p>
+
+      <h2>8. Contacto</h2>
+      <p>
+        Para dudas sobre estos términos, escribe a:
+      </p>
+
+      <p>
+        <strong>Correo:</strong>
+        <a href="mailto:azanexis@gmail.com">azanexis@gmail.com</a>
+      </p>
+
+      <p class="legal-note">
+        Nota: Esta es una versión inicial de términos. Antes de habilitar pagos,
+        usuarios, licencias automáticas o descargas protegidas, se recomienda revisión legal.
+      </p>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .legal-page {
+    min-height: 100vh;
+    padding: 34px 0 90px;
+  }
+
+  .legal-hero {
+    padding: 56px 0 34px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    margin-bottom: 28px;
+    color: var(--muted);
+    font-weight: 850;
+  }
+
+  .back-link:hover {
+    color: var(--text);
+  }
+
+  .legal-hero h1 {
+    max-width: 900px;
+    margin: 22px 0 0;
+    font-size: clamp(44px, 7vw, 86px);
+    line-height: .9;
+    letter-spacing: -0.075em;
+  }
+
+  .legal-hero p {
+    max-width: 760px;
+    margin: 24px 0 0;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  .legal-card {
+    max-width: 980px;
+    padding: 34px;
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,106,0,.14), transparent 34%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+      rgba(17,17,20,.76);
+  }
+
+  .legal-card h2 {
+    margin: 30px 0 10px;
+    font-size: 25px;
+    letter-spacing: -0.035em;
+  }
+
+  .legal-card h2:first-child {
+    margin-top: 0;
+  }
+
+  .legal-card p {
+    margin: 0 0 16px;
+    color: var(--muted);
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+  .legal-card a {
+    color: #ffb067;
+    font-weight: 850;
+  }
+
+  .legal-note {
+    margin-top: 28px !important;
+    padding: 18px;
+    border: 1px solid rgba(255,106,0,.24);
+    border-radius: 18px;
+    background: rgba(255,106,0,.08);
+    color: #ffd6bd !important;
+  }
+
+  @media (max-width: 780px) {
+    .legal-card {
+      padding: 24px;
+      border-radius: 24px;
+    }
+  }
+</style>

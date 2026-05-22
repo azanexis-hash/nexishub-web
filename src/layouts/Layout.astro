@@ -30,13 +30,30 @@ const {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content="https://nexishub-web.pages.dev/azanexis-og.jpg" />
 
-    
+
 
   </head>
 
   <body>
     <slot />
+
+    <footer class="site-legal-footer">
+      <div class="container legal-footer-inner">
+        <div>
+          <strong>AzaNexis Digital Systems</strong>
+          <span>NexisHub Platform</span>
+        </div>
+
+        <nav class="legal-footer-links" aria-label="Enlaces legales">
+          <a href="/privacidad">Privacidad</a>
+          <a href="/terminos">Términos</a>
+          <a href="/soporte">Soporte</a>
+          <a href="mailto:azanexis@gmail.com">Contacto</a>
+        </nav>
+      </div>
+    </footer>
   </body>
+
 </html>
 
 <style is:global>
@@ -227,6 +244,62 @@ const {
     color: var(--accent-2);
   }
 
+   
+   
+   
+   .site-legal-footer {
+    padding: 34px 0;
+    border-top: 1px solid var(--line);
+    background: rgba(5, 5, 5, 0.72);
+  }
+
+  .legal-footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+  }
+
+  .legal-footer-inner strong {
+    display: block;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .legal-footer-inner span {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .legal-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .legal-footer-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 9px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 850;
+  }
+
+  .legal-footer-links a:hover {
+    color: #ffd6bd;
+    border-color: rgba(255, 106, 0, 0.34);
+    background: rgba(255, 106, 0, 0.08);
+  }
+
   @media (max-width: 780px) {
     .container {
       width: min(100% - 26px, var(--max));
@@ -234,6 +307,16 @@ const {
 
     .section {
       padding: 58px 0;
+    }
+
+    .legal-footer-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .legal-footer-links {
+      width: 100%;
+      justify-content: flex-start;
     }
   }
 </style>

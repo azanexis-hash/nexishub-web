@@ -1,0 +1,214 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Soporte | AzaNexis"
+  description="Centro de soporte inicial de AzaNexis y NexisHub para dudas sobre productos, instalación, cotizaciones y servicios de software."
+>
+  <main class="legal-page">
+    <section class="container legal-hero">
+      <a class="back-link" href="/">← Volver a AzaNexis</a>
+
+      <span class="pill">Soporte y contacto</span>
+
+      <h1>Soporte AzaNexis</h1>
+
+      <p>
+        Aquí puedes encontrar los canales iniciales de atención para dudas sobre productos,
+        instalación, compra, cotización o soporte de software.
+      </p>
+    </section>
+
+    <section class="container support-grid">
+      <article class="support-card">
+        <span>📩</span>
+        <h2>Correo de contacto</h2>
+        <p>
+          Para compras, dudas, cotizaciones o seguimiento comercial, escribe directamente a:
+        </p>
+        <a href="mailto:azanexis@gmail.com">azanexis@gmail.com</a>
+      </article>
+
+      <article class="support-card">
+        <span>🧾</span>
+        <h2>Compra de software</h2>
+        <p>
+          Actualmente las compras se gestionan por contacto directo. Próximamente se habilitarán
+          pagos por medios como transferencia, PayPal, OXXO u otros métodos profesionales.
+        </p>
+      </article>
+
+      <article class="support-card">
+        <span>💻</span>
+        <h2>Instalación y licencia</h2>
+        <p>
+          Para productos de escritorio como NutriPlan Nexis, el soporte puede incluir orientación
+          de instalación, activación inicial y validación de licencia según la etapa del producto.
+        </p>
+      </article>
+
+      <article class="support-card">
+        <span>🛠️</span>
+        <h2>Software personalizado</h2>
+        <p>
+          Si necesitas un sistema a la medida para tu negocio, clínica, taller, escuela o empresa,
+          puedes solicitar una cotización explicando tu operación y necesidades principales.
+        </p>
+      </article>
+    </section>
+
+    <section class="container legal-card">
+      <h2>Antes de solicitar soporte</h2>
+      <p>
+        Para poder atenderte mejor, incluye en tu mensaje el nombre del producto, una descripción
+        clara del problema o solicitud, capturas de pantalla si aplica y tus datos de contacto.
+      </p>
+
+      <h2>Tiempo de respuesta</h2>
+      <p>
+        El tiempo de respuesta puede variar según la carga de trabajo, tipo de solicitud,
+        disponibilidad y etapa del producto.
+      </p>
+
+      <p class="legal-note">
+        Este centro de soporte es inicial. Más adelante NexisHub podrá incluir panel de clientes,
+        tickets, historial de compras, licencias y descargas protegidas.
+      </p>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .legal-page {
+    min-height: 100vh;
+    padding: 34px 0 90px;
+  }
+
+  .legal-hero {
+    padding: 56px 0 34px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    margin-bottom: 28px;
+    color: var(--muted);
+    font-weight: 850;
+  }
+
+  .back-link:hover {
+    color: var(--text);
+  }
+
+  .legal-hero h1 {
+    max-width: 900px;
+    margin: 22px 0 0;
+    font-size: clamp(44px, 7vw, 86px);
+    line-height: .9;
+    letter-spacing: -0.075em;
+  }
+
+  .legal-hero p {
+    max-width: 760px;
+    margin: 24px 0 0;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  .support-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .support-card {
+    min-height: 260px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,106,0,.14), transparent 34%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+      rgba(17,17,20,.76);
+  }
+
+  .support-card span {
+    font-size: 32px;
+  }
+
+  .support-card h2 {
+    margin: 20px 0 10px;
+    font-size: 25px;
+    letter-spacing: -0.04em;
+  }
+
+  .support-card p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .support-card a {
+    display: inline-flex;
+    margin-top: 14px;
+    color: #ffb067;
+    font-weight: 900;
+  }
+
+  .legal-card {
+    max-width: 980px;
+    padding: 34px;
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,106,0,.14), transparent 34%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+      rgba(17,17,20,.76);
+  }
+
+  .legal-card h2 {
+    margin: 30px 0 10px;
+    font-size: 25px;
+    letter-spacing: -0.035em;
+  }
+
+  .legal-card h2:first-child {
+    margin-top: 0;
+  }
+
+  .legal-card p {
+    margin: 0 0 16px;
+    color: var(--muted);
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+  .legal-note {
+    margin-top: 28px !important;
+    padding: 18px;
+    border: 1px solid rgba(255,106,0,.24);
+    border-radius: 18px;
+    background: rgba(255,106,0,.08);
+    color: #ffd6bd !important;
+  }
+
+  @media (max-width: 980px) {
+    .support-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 620px) {
+    .support-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .legal-card,
+    .support-card {
+      padding: 24px;
+      border-radius: 24px;
+    }
+  }
+</style>
