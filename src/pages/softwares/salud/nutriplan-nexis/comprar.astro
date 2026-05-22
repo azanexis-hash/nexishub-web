@@ -1,0 +1,328 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Comprar NutriPlan Nexis | AzaNexis"
+  description="Compra NutriPlan Nexis con precio especial de lanzamiento. Software de escritorio para nutriólogos con pacientes ilimitados, base local, menús, PDF y Excel."
+>
+  <main class="buy-page">
+    <section class="container buy-hero">
+      <a class="back-link" href="/softwares/salud">← Volver a NutriPlan Nexis</a>
+
+      <div class="buy-grid">
+        <div class="buy-copy">
+          <span class="pill">Precio de lanzamiento</span>
+
+          <h1>Compra NutriPlan Nexis por <span>$499.00 MXN</span></h1>
+
+          <p>
+            Software de escritorio para nutriólogos que necesitan crear planes,
+            organizar pacientes, calcular equivalentes, generar menús y exportar
+            información clínica en PDF y Excel desde una sola herramienta.
+          </p>
+
+          <div class="buy-actions">
+            <a
+                class="btn btn-primary"
+                 href="mailto:azanexis@gmail.com?subject=Solicitud%20de%20compra%20NutriPlan%20Nexis&body=Hola%20AzaNexis%2C%0A%0AEstoy%20interesado%20en%20adquirir%20NutriPlan%20Nexis%20por%20%24499.00%20MXN.%0A%0AMis%20datos%20son%3A%0ANombre%3A%0ACorreo%3A%0ATel%C3%A9fono%3A%0ACiudad%3A%0A%0ANo%20enviar%C3%A9%20datos%20bancarios%20por%20correo.%20Quedo%20atento%20a%20las%20instrucciones%20oficiales%20de%20compra."
+            >
+                Solicitar compra
+            </a>
+
+            <a class="btn btn-secondary" href="/softwares/salud">
+              Ver detalles del software
+            </a>
+          </div>
+        </div>
+
+        <aside class="price-card">
+          <span>Precio especial</span>
+          <strong>$499.00 MXN</strong>
+          <small>Pago único inicial · por tiempo limitado</small>
+
+          <ul>
+            <li>Pacientes ilimitados</li>
+            <li>Sin mensualidad por expediente</li>
+            <li>Instalación local en Windows</li>
+            <li>Exportación PDF / Excel</li>
+            <li>Base local en tu computadora</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="container info-grid">
+      <article>
+  <span>2</span>
+  <h2>Recibe el método oficial</h2>
+  <p>
+    Te indicaremos el proceso de compra disponible en esta etapa. Más adelante,
+    el pago se realizará desde una pasarela segura integrada a AzaNexis.
+  </p>
+</article>
+
+      <article>
+        <span>2</span>
+        <h2>Recibe instrucciones</h2>
+        <p>
+          Te responderemos con los pasos de pago disponibles y la información
+          necesaria para continuar.
+        </p>
+      </article>
+
+      <article>
+  <span>3</span>
+  <h2>Instala y activa</h2>
+  <p>
+    Después de confirmar la compra, recibirás instrucciones de instalación,
+    activación y uso inicial de NutriPlan Nexis.
+  </p>
+</article>
+    </section>
+
+    <section class="container included-card">
+      <div>
+        <span class="pill">Incluye</span>
+        <h2>Una herramienta pensada para consulta nutricional profesional.</h2>
+      </div>
+
+      <div class="included-list">
+        <span>✅ Cálculo energético y objetivos nutricionales</span>
+        <span>✅ Distribución de equivalentes por tiempo de comida</span>
+        <span>✅ Registro de alimentos y composición nutricional</span>
+        <span>✅ Menú generado y editable</span>
+        <span>✅ Vista previa clínica</span>
+        <span>✅ Exportación PDF y Excel</span>
+      </div>
+    </section>
+
+    <section class="container notice-card">
+  <h2>Pago seguro en preparación</h2>
+  <p>
+    AzaNexis está preparando un flujo de compra más profesional con pasarelas de pago
+    como Mercado Pago, PayPal, OXXO, transferencia u otros métodos disponibles según
+    la integración final. Por seguridad, los pagos automáticos se implementarán mediante
+    backend, validación de compra, registro de licencia y confirmación por webhook.
+  </p>
+
+  <p>
+    Por ahora, esta página funciona como solicitud de compra inicial. No envíes datos
+    bancarios, tarjetas ni información sensible por correo.
+  </p>
+</section>
+  </main>
+</Layout>
+
+<style>
+  .buy-page {
+    min-height: 100vh;
+    padding: 34px 0 90px;
+  }
+
+  .buy-hero {
+    padding: 48px 0 42px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    margin-bottom: 28px;
+    color: var(--muted);
+    font-weight: 850;
+  }
+
+  .back-link:hover {
+    color: var(--text);
+  }
+
+  .buy-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .buy-copy,
+  .price-card,
+  .included-card,
+  .notice-card,
+  .info-grid article {
+    border: 1px solid var(--line);
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,106,0,.16), transparent 34%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+      rgba(17,17,20,.76);
+    box-shadow: 0 24px 80px rgba(0,0,0,.36);
+  }
+
+  .buy-copy {
+    padding: 34px;
+    border-radius: 34px;
+  }
+
+  .buy-copy h1 {
+    max-width: 840px;
+    margin: 24px 0 0;
+    font-size: clamp(44px, 7vw, 92px);
+    line-height: .9;
+    letter-spacing: -0.075em;
+  }
+
+  .buy-copy h1 span {
+    color: var(--accent-2);
+  }
+
+  .buy-copy p {
+    max-width: 760px;
+    margin: 24px 0 0;
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  .buy-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 30px;
+  }
+
+  .price-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 34px;
+    border-radius: 34px;
+  }
+
+  .price-card span {
+    color: #ffd6bd;
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+  }
+
+  .price-card strong {
+    margin-top: 14px;
+    font-size: clamp(52px, 7vw, 82px);
+    line-height: .9;
+    letter-spacing: -0.07em;
+  }
+
+  .price-card small {
+    margin-top: 10px;
+    color: var(--muted);
+    font-weight: 800;
+  }
+
+  .price-card ul {
+    display: grid;
+    gap: 12px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .price-card li {
+    padding: 12px 14px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 999px;
+    background: rgba(255,255,255,.04);
+    color: var(--muted);
+    font-weight: 850;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+  }
+
+  .info-grid article {
+    padding: 26px;
+    border-radius: 28px;
+  }
+
+  .info-grid article span {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: rgba(255,106,0,.14);
+    color: #ffd6bd;
+    font-weight: 950;
+  }
+
+  .info-grid h2,
+  .included-card h2,
+  .notice-card h2 {
+    margin: 18px 0 0;
+    font-size: 30px;
+    letter-spacing: -0.045em;
+  }
+
+  .info-grid p,
+  .notice-card p {
+    margin: 14px 0 0;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .included-card {
+    display: grid;
+    grid-template-columns: .95fr 1.05fr;
+    gap: 22px;
+    margin-top: 24px;
+    padding: 34px;
+    border-radius: 34px;
+  }
+
+  .included-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .included-list span {
+    padding: 13px 15px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
+    background: rgba(255,255,255,.04);
+    color: var(--muted);
+    font-weight: 850;
+  }
+
+  .notice-card {
+    margin-top: 24px;
+    padding: 30px;
+    border-radius: 30px;
+  }
+
+  @media (max-width: 980px) {
+    .buy-grid,
+    .included-card {
+      grid-template-columns: 1fr;
+    }
+
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .buy-copy,
+    .price-card,
+    .included-card,
+    .notice-card,
+    .info-grid article {
+      padding: 24px;
+      border-radius: 24px;
+    }
+
+    .buy-actions .btn {
+      width: 100%;
+    }
+  }
+</style>
