@@ -98,6 +98,92 @@ import Layout from "../../../../layouts/Layout.astro";
     </section>
 
     <section class="container notice-card">
+
+
+    <section class="container faq-card">
+      <div class="faq-heading">
+        <span class="pill">Preguntas frecuentes</span>
+        <h2>Antes de comprar NutriPlan Nexis.</h2>
+        <p>
+          Resolvemos las dudas principales sobre instalación, pacientes, forma de pago,
+          uso local y próximas funciones comerciales.
+        </p>
+      </div>
+
+      <div class="faq-list">
+        <article>
+          <h3>¿NutriPlan Nexis es de pago único?</h3>
+          <p>
+            Actualmente se ofrece con precio especial de lanzamiento de $499.00 MXN como
+            pago único inicial. En el futuro podrían existir otros planes, actualizaciones
+            o servicios adicionales según las funciones incorporadas.
+          </p>
+        </article>
+
+        <article>
+          <h3>¿Tiene límite de pacientes?</h3>
+          <p>
+            No. NutriPlan Nexis está diseñado para trabajar con una base local de pacientes
+            en tu computadora, sin imponer un límite comercial por número de expedientes.
+          </p>
+        </article>
+
+        <article>
+          <h3>¿Necesito internet para usarlo?</h3>
+          <p>
+            El software principal está pensado para funcionar de forma local en Windows.
+            Algunas funciones futuras, como licencias, agenda online, descargas protegidas
+            o sincronización, sí podrían requerir conexión a internet.
+          </p>
+        </article>
+
+        <article>
+          <h3>¿Dónde se instala?</h3>
+          <p>
+            NutriPlan Nexis es un software de escritorio para Windows. La instalación,
+            activación y uso inicial se indicarán después de confirmar la compra.
+          </p>
+        </article>
+
+        <article>
+          <h3>¿Cómo se realizará el pago?</h3>
+          <p>
+            Por ahora esta página funciona como solicitud de compra inicial. AzaNexis está
+            preparando un flujo de pago seguro con opciones como Mercado Pago, PayPal,
+            OXXO, transferencia u otros métodos profesionales.
+          </p>
+        </article>
+
+        <article>
+          <h3>¿Debo enviar datos bancarios por correo?</h3>
+          <p>
+            No. No envíes tarjetas, contraseñas, datos bancarios ni información sensible
+            por correo. Cuando el pago automático esté disponible, se realizará mediante
+            una pasarela segura y validación de compra.
+          </p>
+        </article>
+
+        <article>
+          <h3>¿Incluye PDF y Excel?</h3>
+          <p>
+            Sí. NutriPlan Nexis contempla vista previa clínica y exportación del plan
+            alimenticio en formatos útiles para entrega, revisión y respaldo profesional.
+          </p>
+        </article>
+
+        <article>
+          <h3>¿Habrá licencias y activación por PC?</h3>
+          <p>
+            Sí, está contemplado como fase futura. La arquitectura comercial podrá incluir
+            licencia por equipo, descarga protegida, validación de compra y activación
+            vinculada a la computadora del cliente.
+          </p>
+        </article>
+      </div>
+    </section>
+
+
+
   <h2>Pago seguro en preparación</h2>
   <p>
     AzaNexis está preparando un flujo de compra más profesional con pasarelas de pago
@@ -294,6 +380,68 @@ import Layout from "../../../../layouts/Layout.astro";
     font-weight: 850;
   }
 
+
+
+   .faq-card {
+    margin-top: 24px;
+    padding: 34px;
+    border: 1px solid var(--line);
+    border-radius: 34px;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,106,0,.16), transparent 34%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+      rgba(17,17,20,.76);
+    box-shadow: 0 24px 80px rgba(0,0,0,.36);
+  }
+
+  .faq-heading {
+    max-width: 820px;
+  }
+
+  .faq-heading h2 {
+    margin: 18px 0 0;
+    font-size: clamp(34px, 5vw, 64px);
+    line-height: .95;
+    letter-spacing: -0.06em;
+  }
+
+  .faq-heading p {
+    margin: 18px 0 0;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  .faq-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .faq-list article {
+    padding: 22px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 22px;
+    background: rgba(255,255,255,.04);
+  }
+
+  .faq-list h3 {
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: -0.035em;
+  }
+
+  .faq-list p {
+    margin: 12px 0 0;
+    color: var(--muted);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+
+
+
+
   .notice-card {
     margin-top: 24px;
     padding: 30px;
@@ -306,19 +454,26 @@ import Layout from "../../../../layouts/Layout.astro";
       grid-template-columns: 1fr;
     }
 
-    .info-grid {
+    .info-grid,
+    .faq-list {
       grid-template-columns: 1fr;
     }
   }
 
-  @media (max-width: 620px) {
+   @media (max-width: 620px) {
     .buy-copy,
     .price-card,
     .included-card,
     .notice-card,
+    .faq-card,
     .info-grid article {
       padding: 24px;
       border-radius: 24px;
+    }
+
+    .faq-list article {
+      padding: 18px;
+      border-radius: 18px;
     }
 
     .buy-actions .btn {
