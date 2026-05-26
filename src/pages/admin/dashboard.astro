@@ -1,0 +1,320 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Dashboard Admin | AzaNexis"
+  description="Dashboard administrativo de AzaNexis."
+>
+  <main class="admin-page">
+    <section class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <span class="eyebrow">AzaNexis Admin</span>
+          <h1>Dashboard</h1>
+          <p>
+            Métricas generales de usuarios, productos, compras, licencias,
+            descargas, opiniones, comunidad y soporte.
+          </p>
+        </div>
+
+        <div class="header-actions">
+          <a href="/admin/users">Usuarios</a>
+          <button id="logoutBtn" type="button">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <section id="loadingState" class="panel-card">
+        Cargando métricas administrativas...
+      </section>
+
+      <section id="dashboardContent" hidden>
+        <article class="panel-card admin-info">
+          <h2>Administrador activo</h2>
+          <p id="adminInfo">—</p>
+        </article>
+
+        <section class="stats-grid">
+          <article class="stat-card">
+            <span>Usuarios</span>
+            <strong id="usersTotal">0</strong>
+            <small id="usersDetail">—</small>
+          </article>
+
+          <article class="stat-card">
+            <span>Productos</span>
+            <strong id="productsTotal">0</strong>
+            <small id="productsDetail">—</small>
+          </article>
+
+          <article class="stat-card">
+            <span>Órdenes</span>
+            <strong id="ordersTotal">0</strong>
+            <small>Compras registradas</small>
+          </article>
+
+          <article class="stat-card">
+            <span>Pagos</span>
+            <strong id="paymentsTotal">0</strong>
+            <small>Pagos recibidos</small>
+          </article>
+
+          <article class="stat-card">
+            <span>Licencias</span>
+            <strong id="licensesTotal">0</strong>
+            <small>Licencias emitidas</small>
+          </article>
+
+          <article class="stat-card">
+            <span>Descargas</span>
+            <strong id="downloadsTotal">0</strong>
+            <small>Descargas protegidas</small>
+          </article>
+
+          <article class="stat-card">
+            <span>Opiniones</span>
+            <strong id="reviewsTotal">0</strong>
+            <small>Opiniones verificadas</small>
+          </article>
+
+          <article class="stat-card">
+            <span>Comunidad</span>
+            <strong id="communityTotal">0</strong>
+            <small id="communityDetail">—</small>
+          </article>
+        </section>
+      </section>
+
+      <p id="messageBox" class="message-box" hidden></p>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://nexis-hub-api.azanexis.workers.dev";
+
+    const token = localStorage.getItem("nexishub_admin_token");
+    const loadingState = document.querySelector("#loadingState");
+    const dashboardContent = document.querySelector("#dashboardContent");
+    const messageBox = document.querySelector("#messageBox");
+    const logoutBtn = document.querySelector("#logoutBtn");
+
+    const showMessage = (text, type = "info") => {
+      messageBox.hidden = false;
+      messageBox.textContent = text;
+      messageBox.dataset.type = type;
+    };
+
+    const logout = () => {
+      localStorage.removeItem("nexishub_admin_token");
+      localStorage.removeItem("nexishub_admin_user");
+      window.location.href = "/admin/login";
+    };
+
+    logoutBtn.addEventListener("click", logout);
+
+    const setText = (selector, value) => {
+      document.querySelector(selector).textContent = value;
+    };
+
+    const loadStats = async () => {
+      if (!token) {
+        window.location.href = "/admin/login";
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/admin/stats`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          logout();
+          return;
+        }
+
+        const stats = data.stats;
+        const admin = data.admin;
+
+        setText("#adminInfo", `${admin.first_name} ${admin.last_name} · ${admin.email} · ${admin.role}`);
+
+        setText("#usersTotal", stats.users.total);
+        setText("#usersDetail", `${stats.users.customers} clientes · ${stats.users.admins} admin`);
+
+        setText("#productsTotal", stats.products.total);
+        setText("#productsDetail", `${stats.products.active} activos`);
+
+        setText("#ordersTotal", stats.orders.total);
+        setText("#paymentsTotal", stats.payments.total);
+        setText("#licensesTotal", stats.licenses.total);
+        setText("#downloadsTotal", stats.downloads.total);
+        setText("#reviewsTotal", stats.reviews.total);
+
+        const communityTotal = Number(stats.community.messages || 0) + Number(stats.community.reports || 0);
+        setText("#communityTotal", communityTotal);
+        setText("#communityDetail", `${stats.community.messages} mensajes · ${stats.community.reports} reportes`);
+
+        loadingState.hidden = true;
+        dashboardContent.hidden = false;
+      } catch (error) {
+        loadingState.hidden = true;
+        showMessage("No se pudo conectar con la API administrativa.", "error");
+      }
+    };
+
+    loadStats();
+  </script>
+
+  <style>
+    .admin-page {
+      min-height: 100vh;
+      padding: 42px 20px;
+      background:
+        radial-gradient(circle at top left, rgba(255, 106, 0, .22), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(255, 179, 0, .10), transparent 30%),
+        #07070a;
+      color: #fff;
+    }
+
+    .admin-shell {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 106, 0, .12);
+      color: #ffb36b;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    h1 {
+      margin: 18px 0 0;
+      font-size: clamp(42px, 8vw, 82px);
+      line-height: .9;
+      letter-spacing: -0.06em;
+    }
+
+    .admin-header p {
+      max-width: 760px;
+      margin: 18px 0 0;
+      color: rgba(255,255,255,.72);
+      line-height: 1.7;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .header-actions a,
+    button {
+      padding: 13px 16px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .header-actions a:hover,
+    button:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    .panel-card,
+    .stat-card {
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 28px;
+      background: rgba(15,15,18,.86);
+      box-shadow: 0 24px 80px rgba(0,0,0,.32);
+    }
+
+    .panel-card h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.04em;
+    }
+
+    .panel-card p {
+      margin: 12px 0 0;
+      color: rgba(255,255,255,.72);
+      overflow-wrap: anywhere;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .stat-card span {
+      display: block;
+      color: rgba(255,255,255,.58);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .stat-card strong {
+      display: block;
+      margin-top: 12px;
+      font-size: 42px;
+      letter-spacing: -0.05em;
+    }
+
+    .stat-card small {
+      display: block;
+      margin-top: 8px;
+      color: rgba(255,255,255,.55);
+    }
+
+    .message-box {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      line-height: 1.5;
+      background: rgba(255,255,255,.08);
+    }
+
+    .message-box[data-type="error"] {
+      background: rgba(255, 71, 87, .14);
+      color: #ffb3ba;
+    }
+
+    @media (max-width: 900px) {
+      .admin-header {
+        display: grid;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</Layout>

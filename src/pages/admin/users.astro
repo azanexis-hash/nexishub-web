@@ -1,0 +1,384 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Usuarios Admin | AzaNexis"
+  description="Administración de usuarios de AzaNexis."
+>
+  <main class="admin-page">
+    <section class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <span class="eyebrow">AzaNexis Admin</span>
+          <h1>Usuarios</h1>
+          <p>
+            Lista administrativa de usuarios registrados. Las contraseñas no se muestran
+            nunca por seguridad.
+          </p>
+        </div>
+
+        <div class="header-actions">
+          <a href="/admin/dashboard">Dashboard</a>
+          <button id="logoutBtn" type="button">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <section class="tools-card">
+        <label>
+          Buscar usuario
+          <input id="searchInput" type="search" placeholder="Nombre, correo o apodo..." />
+        </label>
+        <button id="searchBtn" type="button">Buscar</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </section>
+
+      <section id="loadingState" class="panel-card">
+        Cargando usuarios...
+      </section>
+
+      <section id="usersContent" class="users-card" hidden>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Apodo</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Registro</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <p id="messageBox" class="message-box" hidden></p>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://nexis-hub-api.azanexis.workers.dev";
+
+    const token = localStorage.getItem("nexishub_admin_token");
+    const loadingState = document.querySelector("#loadingState");
+    const usersContent = document.querySelector("#usersContent");
+    const messageBox = document.querySelector("#messageBox");
+    const logoutBtn = document.querySelector("#logoutBtn");
+    const searchInput = document.querySelector("#searchInput");
+    const searchBtn = document.querySelector("#searchBtn");
+    const clearBtn = document.querySelector("#clearBtn");
+    const usersTableBody = document.querySelector("#usersTableBody");
+
+    const showMessage = (text, type = "info") => {
+      messageBox.hidden = false;
+      messageBox.textContent = text;
+      messageBox.dataset.type = type;
+    };
+
+    const hideMessage = () => {
+      messageBox.hidden = true;
+      messageBox.textContent = "";
+    };
+
+    const logout = () => {
+      localStorage.removeItem("nexishub_admin_token");
+      localStorage.removeItem("nexishub_admin_user");
+      window.location.href = "/admin/login";
+    };
+
+    logoutBtn.addEventListener("click", logout);
+
+    const formatDate = (value) => {
+      if (!value) return "—";
+      return value;
+    };
+
+    const renderUsers = (users) => {
+      usersTableBody.innerHTML = "";
+
+      if (!users.length) {
+        usersTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty-cell">No se encontraron usuarios.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      users.forEach((user) => {
+        const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>
+            <strong>${fullName || "—"}</strong>
+          </td>
+          <td>${user.email || "—"}</td>
+          <td>${user.display_name || "—"}</td>
+          <td><span class="badge">${user.role || "—"}</span></td>
+          <td><span class="status">${user.status || "—"}</span></td>
+          <td>${formatDate(user.created_at)}</td>
+        `;
+
+        usersTableBody.appendChild(tr);
+      });
+    };
+
+    const loadUsers = async () => {
+      if (!token) {
+        window.location.href = "/admin/login";
+        return;
+      }
+
+      const query = searchInput.value.trim();
+      const url = query
+        ? `${API_URL}/admin/users?q=${encodeURIComponent(query)}`
+        : `${API_URL}/admin/users`;
+
+      loadingState.hidden = false;
+      usersContent.hidden = true;
+      hideMessage();
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          logout();
+          return;
+        }
+
+        renderUsers(data.users || []);
+
+        loadingState.hidden = true;
+        usersContent.hidden = false;
+      } catch (error) {
+        loadingState.hidden = true;
+        showMessage("No se pudo conectar con la API administrativa.", "error");
+      }
+    };
+
+    searchBtn.addEventListener("click", loadUsers);
+
+    clearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      loadUsers();
+    });
+
+    searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        loadUsers();
+      }
+    });
+
+    loadUsers();
+  </script>
+
+  <style>
+    .admin-page {
+      min-height: 100vh;
+      padding: 42px 20px;
+      background:
+        radial-gradient(circle at top left, rgba(255, 106, 0, .22), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(255, 179, 0, .10), transparent 30%),
+        #07070a;
+      color: #fff;
+    }
+
+    .admin-shell {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 106, 0, .12);
+      color: #ffb36b;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    h1 {
+      margin: 18px 0 0;
+      font-size: clamp(42px, 8vw, 82px);
+      line-height: .9;
+      letter-spacing: -0.06em;
+    }
+
+    .admin-header p {
+      max-width: 760px;
+      margin: 18px 0 0;
+      color: rgba(255,255,255,.72);
+      line-height: 1.7;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .header-actions a,
+    button {
+      padding: 13px 16px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .header-actions a:hover,
+    button:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    .tools-card,
+    .panel-card,
+    .users-card {
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 28px;
+      background: rgba(15,15,18,.86);
+      box-shadow: 0 24px 80px rgba(0,0,0,.32);
+    }
+
+    .tools-card {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: rgba(255,255,255,.82);
+      font-weight: 900;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 15px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: rgba(255, 159, 67, .9);
+      box-shadow: 0 0 0 4px rgba(255, 159, 67, .12);
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    th,
+    td {
+      padding: 15px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.78);
+      vertical-align: top;
+    }
+
+    th {
+      color: #ffb36b;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    td {
+      overflow-wrap: anywhere;
+    }
+
+    td strong {
+      color: #fff;
+    }
+
+    .badge,
+    .status {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 106, 0, .12);
+      color: #ffb36b;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .status {
+      background: rgba(35, 213, 120, .13);
+      color: #9ff0c1;
+    }
+
+    .empty-cell {
+      text-align: center;
+      color: rgba(255,255,255,.55);
+      padding: 28px;
+    }
+
+    .message-box {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      line-height: 1.5;
+      background: rgba(255,255,255,.08);
+    }
+
+    .message-box[data-type="error"] {
+      background: rgba(255, 71, 87, .14);
+      color: #ffb3ba;
+    }
+
+    @media (max-width: 900px) {
+      .admin-header,
+      .tools-card {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</Layout>
