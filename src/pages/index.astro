@@ -73,6 +73,13 @@ import Layout from "../layouts/Layout.astro";
 
 
        <a class="btn btn-primary nav-cta" href="/softwares">Ver catálogo</a>
+
+          <div id="homeSessionCard" class="home-session-card" hidden>
+            <span id="homeSessionLabel">Sesión activa</span>
+            <strong id="homeSessionName">—</strong>
+            <small id="homeSessionEmail">—</small>
+            <a id="homeSessionAction" href="/app/dashboard">Mi panel</a>
+          </div>
     </header>
 
     <nav class="mobile-nav container" aria-label="Navegación móvil">
@@ -454,6 +461,95 @@ import Layout from "../layouts/Layout.astro";
       <span>Software, automatización, inteligencia artificial y soluciones digitales.</span>
     </footer>
   </main>
+  <script is:inline>
+    // HOME_SESSION_CARD_SCRIPT
+    (() => {
+      const API_URL = "https://nexis-hub-api.azanexis.workers.dev";
+
+      const card = document.querySelector("#homeSessionCard");
+      const label = document.querySelector("#homeSessionLabel");
+      const name = document.querySelector("#homeSessionName");
+      const email = document.querySelector("#homeSessionEmail");
+      const action = document.querySelector("#homeSessionAction");
+
+      if (!card || !label || !name || !email || !action) return;
+
+      const clientToken = localStorage.getItem("nexishub_token");
+      const adminToken = localStorage.getItem("nexishub_admin_token");
+
+      const validateToken = async (token, type) => {
+        if (!token) return null;
+
+        try {
+          const response = await fetch(`${API_URL}/me`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.ok) {
+            return null;
+          }
+
+          return {
+            user: data.user,
+            type,
+          };
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const renderSession = (session) => {
+        const user = session.user;
+        const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+
+        label.textContent = user.role === "admin" ? "Admin activo" : "Sesión activa";
+        name.textContent = fullName || user.display_name || "Usuario AzaNexis";
+        email.textContent = user.email || "";
+
+        if (user.role === "admin") {
+          action.href = "/admin/dashboard";
+          action.textContent = "Panel admin";
+        } else {
+          action.href = "/app/dashboard";
+          action.textContent = "Mi panel";
+        }
+
+        card.hidden = false;
+      };
+
+      const boot = async () => {
+        let session = null;
+
+        if (clientToken) {
+          session = await validateToken(clientToken, "client");
+
+          if (!session) {
+            localStorage.removeItem("nexishub_token");
+            localStorage.removeItem("nexishub_user");
+          }
+        }
+
+        if (!session && adminToken) {
+          session = await validateToken(adminToken, "admin");
+
+          if (!session) {
+            localStorage.removeItem("nexishub_admin_token");
+            localStorage.removeItem("nexishub_admin_user");
+          }
+        }
+
+        if (session) {
+          renderSession(session);
+        }
+      };
+
+      boot();
+    })();
+  </script>
 </Layout>
 
 <style>
@@ -1433,5 +1529,61 @@ import Layout from "../layouts/Layout.astro";
   }
 
 
+
+
+  .home-session-card {
+    flex-basis: 100%;
+    width: min(240px, 100%);
+    margin-left: auto;
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(10,10,12,.58);
+    box-shadow: 0 14px 36px rgba(0,0,0,.25);
+    backdrop-filter: blur(10px);
+  }
+
+  .home-session-card[hidden] {
+    display: none !important;
+  }
+
+  .home-session-card span,
+  .home-session-card strong,
+  .home-session-card small,
+  .home-session-card a {
+    display: block;
+  }
+
+  .home-session-card span {
+    color: #ffb36b;
+    font-size: 12px;
+    font-weight: 900;
+    margin-bottom: 5px;
+  }
+
+  .home-session-card strong {
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .home-session-card small {
+    margin-top: 4px;
+    color: rgba(255,255,255,.62);
+    font-size: 12px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .home-session-card a {
+    width: fit-content;
+    margin-top: 9px;
+    color: #ff9f43;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 950;
+  }
 
 </style>

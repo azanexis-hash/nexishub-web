@@ -17,7 +17,7 @@ import Layout from "../layouts/Layout.astro";
         protegidas y futuros beneficios de la comunidad AzaNexis.
       </p>
 
-      <section class="access-grid">
+      <section id="guestAccessCard" class="access-grid">
         <article class="access-card">
           <span>Cliente</span>
           <h2>Mi cuenta</h2>
@@ -34,8 +34,100 @@ import Layout from "../layouts/Layout.astro";
           </div>
         </article>
       </section>
+
+      <section id="activeAccessCard" class="access-grid" hidden>
+        <article class="access-card active-card">
+          <span>Sesión activa</span>
+          <h2>Ya ingresaste</h2>
+          <p>
+            Tu sesión está activa en este navegador. Puedes ir directo a tu panel,
+            seguir viendo el catálogo o cerrar sesión.
+          </p>
+
+          <div class="account-box">
+            <strong id="activeFullName">—</strong>
+            <small id="activeEmail">—</small>
+            <small id="activeDisplayName">—</small>
+          </div>
+
+          <div class="actions">
+            <a class="primary-btn" href="/app/dashboard">Ir a mi panel</a>
+            <a class="secondary-btn" href="/softwares">Ver catálogo</a>
+            <button id="logoutClientBtn" class="ghost-btn" type="button">Cerrar sesión</button>
+          </div>
+        </article>
+      </section>
     </section>
   </main>
+
+  <script>
+    const API_URL = "https://nexis-hub-api.azanexis.workers.dev";
+
+    const guestAccessCard = document.querySelector("#guestAccessCard");
+    const activeAccessCard = document.querySelector("#activeAccessCard");
+    const logoutClientBtn = document.querySelector("#logoutClientBtn");
+
+    const setText = (selector, value) => {
+      const element = document.querySelector(selector);
+      if (element) element.textContent = value || "—";
+    };
+
+    const clearClientSession = () => {
+      localStorage.removeItem("nexishub_token");
+      localStorage.removeItem("nexishub_user");
+    };
+
+    const showGuestAccess = () => {
+      guestAccessCard.hidden = false;
+      activeAccessCard.hidden = true;
+    };
+
+    const showActiveAccess = (user) => {
+      guestAccessCard.hidden = true;
+      activeAccessCard.hidden = false;
+
+      setText("#activeFullName", `${user.first_name || ""} ${user.last_name || ""}`.trim());
+      setText("#activeEmail", user.email);
+      setText("#activeDisplayName", `Apodo: ${user.display_name || "—"}`);
+    };
+
+    const validateClientSession = async () => {
+      const token = localStorage.getItem("nexishub_token");
+
+      if (!token) {
+        showGuestAccess();
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          clearClientSession();
+          showGuestAccess();
+          return;
+        }
+
+        localStorage.setItem("nexishub_user", JSON.stringify(data.user));
+        showActiveAccess(data.user);
+      } catch (error) {
+        showGuestAccess();
+      }
+    };
+
+    logoutClientBtn.addEventListener("click", () => {
+      clearClientSession();
+      window.location.href = "/acceso";
+    });
+
+    validateClientSession();
+  </script>
 
   <style>
     .access-page {
@@ -101,6 +193,10 @@ import Layout from "../layouts/Layout.astro";
       box-shadow: 0 24px 80px rgba(0,0,0,.32);
     }
 
+    .active-card {
+      border-color: rgba(255, 179, 0, .24);
+    }
+
     .access-card span {
       display: inline-flex;
       padding: 7px 11px;
@@ -124,6 +220,30 @@ import Layout from "../layouts/Layout.astro";
       line-height: 1.65;
     }
 
+    .account-box {
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+    }
+
+    .account-box strong,
+    .account-box small {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .account-box strong {
+      color: #fff;
+      font-size: 20px;
+    }
+
+    .account-box small {
+      margin-top: 6px;
+      color: rgba(255,255,255,.62);
+    }
+
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -141,9 +261,12 @@ import Layout from "../layouts/Layout.astro";
       border-radius: 16px;
       font-weight: 950;
       text-decoration: none;
+      cursor: pointer;
+      font-size: 15px;
     }
 
     .primary-btn {
+      border: 0;
       background: linear-gradient(135deg, #ff6a00, #ffb000);
       color: #111;
     }
