@@ -3,18 +3,18 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout
-  title="Acceso | AzaNexis"
-  description="Acceso a cuenta de cliente y administración de AzaNexis."
+  title="Acceso de cliente | AzaNexis"
+  description="Acceso de clientes a NexisHub y productos AzaNexis."
 >
   <main class="access-page">
     <section class="access-shell">
       <a class="back-link" href="/">← Volver al inicio</a>
 
       <span class="eyebrow">NexisHub Platform</span>
-      <h1>Acceso a la plataforma</h1>
+      <h1>Acceso de cliente</h1>
       <p class="intro">
-        Entra como cliente para consultar tu cuenta, compras, licencias y descargas.
-        Si eres administrador, accede al panel privado de gestión.
+        Entra a tu cuenta para consultar tu perfil, compras, licencias, descargas
+        protegidas y futuros beneficios de la comunidad AzaNexis.
       </p>
 
       <section class="access-grid">
@@ -22,25 +22,15 @@ import Layout from "../layouts/Layout.astro";
           <span>Cliente</span>
           <h2>Mi cuenta</h2>
           <p>
-            Acceso para usuarios registrados, compradores y futuros miembros de la comunidad.
+            Acceso para usuarios registrados, compradores y futuros miembros de la
+            comunidad. Desde tu cuenta podrás volver al catálogo, revisar productos
+            y consultar tus futuras licencias.
           </p>
 
           <div class="actions">
             <a class="primary-btn" href="/app/login">Iniciar sesión</a>
             <a class="secondary-btn" href="/app/registro">Crear cuenta</a>
-          </div>
-        </article>
-
-        <article class="access-card admin-card">
-          <span>Administrador</span>
-          <h2>Panel admin</h2>
-          <p>
-            Acceso privado para revisar usuarios, métricas, compras, licencias,
-            descargas, opiniones y comunidad.
-          </p>
-
-          <div class="actions">
-            <a class="primary-btn" href="/admin/login">Entrar como admin</a>
+            <a class="ghost-btn" href="/softwares">Ver catálogo</a>
           </div>
         </article>
       </section>
@@ -59,7 +49,7 @@ import Layout from "../layouts/Layout.astro";
     }
 
     .access-shell {
-      width: min(1120px, 100%);
+      width: min(980px, 100%);
       margin: 0 auto;
     }
 
@@ -98,13 +88,13 @@ import Layout from "../layouts/Layout.astro";
 
     .access-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
       gap: 18px;
       margin-top: 34px;
     }
 
     .access-card {
-      padding: 30px;
+      padding: 34px;
       border: 1px solid rgba(255,255,255,.12);
       border-radius: 30px;
       background: rgba(15,15,18,.86);
@@ -123,11 +113,12 @@ import Layout from "../layouts/Layout.astro";
 
     .access-card h2 {
       margin: 20px 0 0;
-      font-size: 36px;
+      font-size: 42px;
       letter-spacing: -0.05em;
     }
 
     .access-card p {
+      max-width: 760px;
       margin: 14px 0 0;
       color: rgba(255,255,255,.68);
       line-height: 1.65;
@@ -141,7 +132,8 @@ import Layout from "../layouts/Layout.astro";
     }
 
     .primary-btn,
-    .secondary-btn {
+    .secondary-btn,
+    .ghost-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -156,20 +148,15 @@ import Layout from "../layouts/Layout.astro";
       color: #111;
     }
 
-    .secondary-btn {
+    .secondary-btn,
+    .ghost-btn {
       border: 1px solid rgba(255,255,255,.16);
       color: #fff;
       background: rgba(255,255,255,.06);
     }
 
-    .admin-card {
-      border-color: rgba(255, 179, 0, .22);
-    }
-
-    @media (max-width: 800px) {
-      .access-grid {
-        grid-template-columns: 1fr;
-      }
+    .ghost-btn {
+      color: #ffb36b;
     }
   </style>
 </Layout>

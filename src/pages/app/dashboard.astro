@@ -14,11 +14,17 @@ import Layout from "../../layouts/Layout.astro";
           <h1>Panel del cliente</h1>
           <p>
             Este será el centro de compras, licencias, descargas, opiniones y comunidad
-            para usuarios de AzaNexis.
+            para usuarios de AzaNexis. También puedes seguir navegando el catálogo.
           </p>
         </div>
 
-        <button id="logoutBtn" type="button">Cerrar sesión</button>
+        <div class="header-actions">
+          <a href="/">Inicio</a>
+          <a href="/softwares">Catálogo</a>
+          <a href="/softwares/salud">NutriPlan Nexis</a>
+          <a href="/softwares/salud/nutriplan-nexis/comprar">Comprar</a>
+          <button id="logoutBtn" type="button">Cerrar sesión</button>
+        </div>
       </header>
 
       <section id="loadingState" class="panel-card">
@@ -191,6 +197,15 @@ import Layout from "../../layouts/Layout.astro";
       line-height: 1.7;
     }
 
+    .header-actions {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-width: 520px;
+    }
+
+    .header-actions a,
     button {
       padding: 13px 16px;
       border: 1px solid rgba(255,255,255,.16);
@@ -199,8 +214,11 @@ import Layout from "../../layouts/Layout.astro";
       color: #fff;
       font-weight: 800;
       cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
     }
 
+    .header-actions a:hover,
     button:hover {
       background: rgba(255,255,255,.1);
     }
@@ -275,6 +293,10 @@ import Layout from "../../layouts/Layout.astro";
     @media (max-width: 900px) {
       .dashboard-header {
         display: grid;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
       }
 
       .user-grid,

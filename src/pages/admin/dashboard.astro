@@ -14,11 +14,15 @@ import Layout from "../../layouts/Layout.astro";
           <h1>Dashboard</h1>
           <p>
             Métricas generales de usuarios, productos, compras, licencias,
-            descargas, opiniones, comunidad y soporte.
+            descargas, opiniones, comunidad y soporte. También puedes navegar
+            el sitio público sin cerrar sesión.
           </p>
         </div>
 
         <div class="header-actions">
+          <a href="/">Inicio</a>
+          <a href="/softwares">Catálogo</a>
+          <a href="/softwares/salud">NutriPlan</a>
           <a href="/admin/users">Usuarios</a>
           <button id="logoutBtn" type="button">Cerrar sesión</button>
         </div>
@@ -222,6 +226,7 @@ import Layout from "../../layouts/Layout.astro";
       align-items: center;
       flex-wrap: wrap;
       justify-content: flex-end;
+      max-width: 560px;
     }
 
     .header-actions a,
