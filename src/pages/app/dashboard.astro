@@ -1,0 +1,286 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Panel del cliente | AzaNexis"
+  description="Panel de cliente para productos, compras y licencias AzaNexis."
+>
+  <main class="dashboard-page">
+    <section class="dashboard-shell">
+      <header class="dashboard-header">
+        <div>
+          <span class="eyebrow">NexisHub</span>
+          <h1>Panel del cliente</h1>
+          <p>
+            Este será el centro de compras, licencias, descargas, opiniones y comunidad
+            para usuarios de AzaNexis.
+          </p>
+        </div>
+
+        <button id="logoutBtn" type="button">Cerrar sesión</button>
+      </header>
+
+      <section id="loadingState" class="panel-card">
+        Validando sesión...
+      </section>
+
+      <section id="dashboardContent" hidden>
+        <article class="panel-card user-card">
+          <h2>Tu cuenta</h2>
+
+          <div class="user-grid">
+            <div>
+              <span>Nombre</span>
+              <strong id="fullName">—</strong>
+            </div>
+
+            <div>
+              <span>Correo</span>
+              <strong id="email">—</strong>
+            </div>
+
+            <div>
+              <span>Apodo público</span>
+              <strong id="displayName">—</strong>
+            </div>
+
+            <div>
+              <span>Rol</span>
+              <strong id="role">—</strong>
+            </div>
+          </div>
+        </article>
+
+        <section class="cards-grid">
+          <article class="panel-card">
+            <h2>Compras</h2>
+            <p>Próximamente verás aquí tus compras confirmadas.</p>
+          </article>
+
+          <article class="panel-card">
+            <h2>Licencias</h2>
+            <p>Próximamente aparecerán tus licencias y activaciones por PC.</p>
+          </article>
+
+          <article class="panel-card">
+            <h2>Descargas</h2>
+            <p>Próximamente podrás descargar instaladores protegidos.</p>
+          </article>
+
+          <article class="panel-card">
+            <h2>Comunidad</h2>
+            <p>Próximamente podrás participar con tu apodo público.</p>
+          </article>
+        </section>
+      </section>
+
+      <p id="messageBox" class="message-box" hidden></p>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://nexis-hub-api.azanexis.workers.dev";
+
+    const token = localStorage.getItem("nexishub_token");
+    const loadingState = document.querySelector("#loadingState");
+    const dashboardContent = document.querySelector("#dashboardContent");
+    const messageBox = document.querySelector("#messageBox");
+    const logoutBtn = document.querySelector("#logoutBtn");
+
+    const showMessage = (text, type = "info") => {
+      messageBox.hidden = false;
+      messageBox.textContent = text;
+      messageBox.dataset.type = type;
+    };
+
+    const logout = () => {
+      localStorage.removeItem("nexishub_token");
+      localStorage.removeItem("nexishub_user");
+      window.location.href = "/app/login";
+    };
+
+    logoutBtn.addEventListener("click", logout);
+
+    const loadUser = async () => {
+      if (!token) {
+        window.location.href = "/app/login";
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/me`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          logout();
+          return;
+        }
+
+        const user = data.user;
+
+        document.querySelector("#fullName").textContent = `${user.first_name} ${user.last_name}`;
+        document.querySelector("#email").textContent = user.email;
+        document.querySelector("#displayName").textContent = user.display_name;
+        document.querySelector("#role").textContent = user.role;
+
+        localStorage.setItem("nexishub_user", JSON.stringify(user));
+
+        loadingState.hidden = true;
+        dashboardContent.hidden = false;
+      } catch (error) {
+        loadingState.hidden = true;
+        showMessage("No se pudo conectar con la API. Intenta nuevamente.", "error");
+      }
+    };
+
+    loadUser();
+  </script>
+
+  <style>
+    .dashboard-page {
+      min-height: 100vh;
+      padding: 42px 20px;
+      background:
+        radial-gradient(circle at top left, rgba(255, 106, 0, .22), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(255, 179, 0, .10), transparent 30%),
+        #07070a;
+      color: #fff;
+    }
+
+    .dashboard-shell {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 106, 0, .12);
+      color: #ffb36b;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    h1 {
+      margin: 18px 0 0;
+      font-size: clamp(42px, 8vw, 82px);
+      line-height: .9;
+      letter-spacing: -0.06em;
+    }
+
+    .dashboard-header p {
+      max-width: 720px;
+      margin: 18px 0 0;
+      color: rgba(255,255,255,.72);
+      line-height: 1.7;
+    }
+
+    button {
+      padding: 13px 16px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    .panel-card {
+      padding: 26px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 28px;
+      background: rgba(15,15,18,.86);
+      box-shadow: 0 24px 80px rgba(0,0,0,.32);
+    }
+
+    .panel-card h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.04em;
+    }
+
+    .panel-card p {
+      margin: 12px 0 0;
+      color: rgba(255,255,255,.68);
+      line-height: 1.6;
+    }
+
+    .user-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .user-grid div {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      min-width: 0;
+    }
+
+    .user-grid span {
+      display: block;
+      color: rgba(255,255,255,.5);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .user-grid strong {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .message-box {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      line-height: 1.5;
+      background: rgba(255,255,255,.08);
+    }
+
+    .message-box[data-type="error"] {
+      background: rgba(255, 71, 87, .14);
+      color: #ffb3ba;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-header {
+        display: grid;
+      }
+
+      .user-grid,
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</Layout>
