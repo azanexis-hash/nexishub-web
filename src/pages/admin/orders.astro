@@ -3,18 +3,18 @@ import Layout from "../../layouts/Layout.astro";
 ---
 
 <Layout
-  title="Usuarios Admin | AzaNexis"
-  description="Administración de usuarios de AzaNexis."
+  title="Órdenes Admin | AzaNexis"
+  description="Administración de órdenes y solicitudes de compra de AzaNexis."
 >
   <main class="admin-page">
     <section class="admin-shell">
       <header class="admin-header">
         <div>
           <span class="eyebrow">AzaNexis Admin</span>
-          <h1>Usuarios</h1>
+          <h1>Órdenes</h1>
           <p>
-            Lista administrativa de usuarios registrados. Las contraseñas no se muestran
-            nunca por seguridad.
+            Solicitudes de compra registradas por usuarios. Esta vista prepara
+            el futuro flujo de pagos, licencias y descargas protegidas.
           </p>
         </div>
 
@@ -22,38 +22,38 @@ import Layout from "../../layouts/Layout.astro";
           <a href="/">Inicio</a>
           <a href="/softwares">Catálogo</a>
           <a href="/admin/dashboard">Dashboard</a>
-          <a href="/admin/orders">Órdenes</a>
+          <a href="/admin/users">Usuarios</a>
           <button id="logoutBtn" type="button">Cerrar sesión</button>
         </div>
       </header>
 
       <section class="tools-card">
         <label>
-          Buscar usuario
-          <input id="searchInput" type="search" placeholder="Nombre, correo o apodo..." />
+          Buscar orden
+          <input id="searchInput" type="search" placeholder="Orden, cliente, correo, producto o estado..." />
         </label>
         <button id="searchBtn" type="button">Buscar</button>
         <button id="clearBtn" type="button">Limpiar</button>
       </section>
 
       <section id="loadingState" class="panel-card">
-        Cargando usuarios...
+        Cargando órdenes...
       </section>
 
-      <section id="usersContent" class="users-card" hidden>
+      <section id="ordersContent" class="orders-card" hidden>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Apodo</th>
-                <th>Rol</th>
+                <th>Orden</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Total</th>
                 <th>Estado</th>
-                <th>Registro</th>
+                <th>Fecha</th>
               </tr>
             </thead>
-            <tbody id="usersTableBody"></tbody>
+            <tbody id="ordersTableBody"></tbody>
           </table>
         </div>
       </section>
@@ -67,13 +67,21 @@ import Layout from "../../layouts/Layout.astro";
 
     const token = localStorage.getItem("nexishub_admin_token");
     const loadingState = document.querySelector("#loadingState");
-    const usersContent = document.querySelector("#usersContent");
+    const ordersContent = document.querySelector("#ordersContent");
     const messageBox = document.querySelector("#messageBox");
     const logoutBtn = document.querySelector("#logoutBtn");
     const searchInput = document.querySelector("#searchInput");
     const searchBtn = document.querySelector("#searchBtn");
     const clearBtn = document.querySelector("#clearBtn");
-    const usersTableBody = document.querySelector("#usersTableBody");
+    const ordersTableBody = document.querySelector("#ordersTableBody");
+
+    const formatMoney = (amount, currency) => {
+      const value = Number(amount || 0) / 100;
+      return new Intl.NumberFormat("es-MX", {
+        style: "currency",
+        currency: currency || "MXN",
+      }).format(value);
+    };
 
     const showMessage = (text, type = "info") => {
       messageBox.hidden = false;
@@ -94,44 +102,46 @@ import Layout from "../../layouts/Layout.astro";
 
     logoutBtn.addEventListener("click", logout);
 
-    const formatDate = (value) => {
-      if (!value) return "—";
-      return value;
-    };
+    const renderOrders = (orders) => {
+      ordersTableBody.innerHTML = "";
 
-    const renderUsers = (users) => {
-      usersTableBody.innerHTML = "";
-
-      if (!users.length) {
-        usersTableBody.innerHTML = `
+      if (!orders.length) {
+        ordersTableBody.innerHTML = `
           <tr>
-            <td colspan="6" class="empty-cell">No se encontraron usuarios.</td>
+            <td colspan="6" class="empty-cell">No se encontraron órdenes.</td>
           </tr>
         `;
         return;
       }
 
-      users.forEach((user) => {
-        const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+      orders.forEach((order) => {
+        const clientName = `${order.user_first_name || ""} ${order.user_last_name || ""}`.trim();
 
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
           <td>
-            <strong>${fullName || "—"}</strong>
+            <strong>${order.order_number || "—"}</strong>
+            <small>${order.provider || "—"}</small>
           </td>
-          <td>${user.email || "—"}</td>
-          <td>${user.display_name || "—"}</td>
-          <td><span class="badge">${user.role || "—"}</span></td>
-          <td><span class="status">${user.status || "—"}</span></td>
-          <td>${formatDate(user.created_at)}</td>
+          <td>
+            <strong>${clientName || "—"}</strong>
+            <small>${order.user_email || "—"}</small>
+          </td>
+          <td>
+            <strong>${order.product_name || "—"}</strong>
+            <small>${order.product_slug || "—"}</small>
+          </td>
+          <td>${formatMoney(order.total, order.currency)}</td>
+          <td><span class="status">${order.status || "—"}</span></td>
+          <td>${order.created_at || "—"}</td>
         `;
 
-        usersTableBody.appendChild(tr);
+        ordersTableBody.appendChild(tr);
       });
     };
 
-    const loadUsers = async () => {
+    const loadOrders = async () => {
       if (!token) {
         window.location.href = "/admin/login";
         return;
@@ -139,11 +149,11 @@ import Layout from "../../layouts/Layout.astro";
 
       const query = searchInput.value.trim();
       const url = query
-        ? `${API_URL}/admin/users?q=${encodeURIComponent(query)}`
-        : `${API_URL}/admin/users`;
+        ? `${API_URL}/admin/orders?q=${encodeURIComponent(query)}`
+        : `${API_URL}/admin/orders`;
 
       loadingState.hidden = false;
-      usersContent.hidden = true;
+      ordersContent.hidden = true;
       hideMessage();
 
       try {
@@ -160,30 +170,30 @@ import Layout from "../../layouts/Layout.astro";
           return;
         }
 
-        renderUsers(data.users || []);
+        renderOrders(data.orders || []);
 
         loadingState.hidden = true;
-        usersContent.hidden = false;
+        ordersContent.hidden = false;
       } catch (error) {
         loadingState.hidden = true;
         showMessage("No se pudo conectar con la API administrativa.", "error");
       }
     };
 
-    searchBtn.addEventListener("click", loadUsers);
+    searchBtn.addEventListener("click", loadOrders);
 
     clearBtn.addEventListener("click", () => {
       searchInput.value = "";
-      loadUsers();
+      loadOrders();
     });
 
     searchInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
-        loadUsers();
+        loadOrders();
       }
     });
 
-    loadUsers();
+    loadOrders();
   </script>
 
   <style>
@@ -240,6 +250,7 @@ import Layout from "../../layouts/Layout.astro";
       align-items: center;
       flex-wrap: wrap;
       justify-content: flex-end;
+      max-width: 620px;
     }
 
     .header-actions a,
@@ -262,7 +273,7 @@ import Layout from "../../layouts/Layout.astro";
 
     .tools-card,
     .panel-card,
-    .users-card {
+    .orders-card {
       padding: 24px;
       border: 1px solid rgba(255,255,255,.12);
       border-radius: 28px;
@@ -310,7 +321,7 @@ import Layout from "../../layouts/Layout.astro";
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 860px;
+      min-width: 940px;
     }
 
     th,
@@ -333,11 +344,20 @@ import Layout from "../../layouts/Layout.astro";
       overflow-wrap: anywhere;
     }
 
+    td strong,
+    td small {
+      display: block;
+    }
+
     td strong {
       color: #fff;
     }
 
-    .badge,
+    td small {
+      margin-top: 4px;
+      color: rgba(255,255,255,.54);
+    }
+
     .status {
       display: inline-flex;
       padding: 6px 10px;
@@ -346,11 +366,6 @@ import Layout from "../../layouts/Layout.astro";
       color: #ffb36b;
       font-size: 13px;
       font-weight: 900;
-    }
-
-    .status {
-      background: rgba(35, 213, 120, .13);
-      color: #9ff0c1;
     }
 
     .empty-cell {

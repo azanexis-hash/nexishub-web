@@ -58,9 +58,10 @@ import Layout from "../../layouts/Layout.astro";
         </article>
 
         <section class="cards-grid">
-          <article class="panel-card">
+          <article class="panel-card orders-card">
             <h2>Compras</h2>
-            <p>Próximamente verás aquí tus compras confirmadas.</p>
+            <p id="ordersIntro">Cargando tus compras...</p>
+            <div id="ordersList" class="orders-list"></div>
           </article>
 
           <article class="panel-card">
@@ -107,6 +108,66 @@ import Layout from "../../layouts/Layout.astro";
 
     logoutBtn.addEventListener("click", logout);
 
+    const formatMoney = (amount, currency) => {
+      const value = Number(amount || 0) / 100;
+      return new Intl.NumberFormat("es-MX", {
+        style: "currency",
+        currency: currency || "MXN",
+      }).format(value);
+    };
+
+    const renderOrders = (orders) => {
+      const ordersIntro = document.querySelector("#ordersIntro");
+      const ordersList = document.querySelector("#ordersList");
+
+      if (!ordersIntro || !ordersList) return;
+
+      ordersList.innerHTML = "";
+
+      if (!orders.length) {
+        ordersIntro.textContent = "Todavía no tienes compras registradas.";
+        return;
+      }
+
+      ordersIntro.textContent = "Estas son tus compras o solicitudes registradas.";
+
+      orders.forEach((order) => {
+        const item = document.createElement("div");
+        item.className = "order-item";
+
+        item.innerHTML = `
+          <strong>${order.product_name || "Producto"}</strong>
+          <span>Orden: ${order.order_number || "—"}</span>
+          <span>Estado: ${order.status || "—"}</span>
+          <span>Total: ${formatMoney(order.total, order.currency)}</span>
+          <small>Fecha: ${order.created_at || "—"}</small>
+        `;
+
+        ordersList.appendChild(item);
+      });
+    };
+
+    const loadOrders = async () => {
+      try {
+        const response = await fetch(`${API_URL}/me/orders`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          renderOrders([]);
+          return;
+        }
+
+        renderOrders(data.orders || []);
+      } catch (error) {
+        renderOrders([]);
+      }
+    };
+
     const loadUser = async () => {
       if (!token) {
         window.location.href = "/app/login";
@@ -139,6 +200,8 @@ import Layout from "../../layouts/Layout.astro";
 
         loadingState.hidden = true;
         dashboardContent.hidden = false;
+
+        loadOrders();
       } catch (error) {
         loadingState.hidden = true;
         showMessage("No se pudo conectar con la API. Intenta nuevamente.", "error");
@@ -274,6 +337,31 @@ import Layout from "../../layouts/Layout.astro";
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 16px;
       margin-top: 16px;
+    }
+
+    .orders-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .order-item {
+      display: grid;
+      gap: 6px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .order-item strong {
+      color: #fff;
+    }
+
+    .order-item span,
+    .order-item small {
+      color: rgba(255,255,255,.62);
+      overflow-wrap: anywhere;
     }
 
     .message-box {
