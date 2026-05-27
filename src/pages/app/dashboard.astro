@@ -64,9 +64,10 @@ import Layout from "../../layouts/Layout.astro";
             <div id="ordersList" class="orders-list"></div>
           </article>
 
-          <article class="panel-card">
+          <article class="panel-card licenses-card">
             <h2>Licencias</h2>
-            <p>Próximamente aparecerán tus licencias y activaciones por PC.</p>
+            <p id="licensesIntro">Cargando tus licencias...</p>
+            <div id="licensesList" class="licenses-list"></div>
           </article>
 
           <article class="panel-card">
@@ -168,6 +169,71 @@ import Layout from "../../layouts/Layout.astro";
       }
     };
 
+
+    const getLicenseStatusLabel = (status) => {
+      const labels = {
+        active: "Activa",
+        suspended: "Suspendida",
+        revoked: "Revocada",
+        expired: "Expirada",
+      };
+
+      return labels[status] || status || "—";
+    };
+
+    const renderLicenses = (licenses) => {
+      const licensesIntro = document.querySelector("#licensesIntro");
+      const licensesList = document.querySelector("#licensesList");
+
+      if (!licensesIntro || !licensesList) return;
+
+      licensesList.innerHTML = "";
+
+      if (!licenses.length) {
+        licensesIntro.textContent = "Todavía no tienes licencias registradas.";
+        return;
+      }
+
+      licensesIntro.textContent = "Estas son tus licencias disponibles.";
+
+      licenses.forEach((license) => {
+        const item = document.createElement("div");
+        item.className = "license-item";
+
+        item.innerHTML = `
+          <strong>${license.product_name || "Producto"}</strong>
+          <span>Licencia: ${license.license_display || "—"}</span>
+          <span>Estado: ${getLicenseStatusLabel(license.status)}</span>
+          <span>Activaciones: ${license.activation_count ?? 0} / ${license.max_activations ?? 1}</span>
+          <small>Orden: ${license.order_number || "—"}</small>
+          <small>Creada: ${license.created_at || "—"}</small>
+        `;
+
+        licensesList.appendChild(item);
+      });
+    };
+
+    const loadLicenses = async () => {
+      try {
+        const response = await fetch(`${API_URL}/me/licenses`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          renderLicenses([]);
+          return;
+        }
+
+        renderLicenses(data.licenses || []);
+      } catch (error) {
+        renderLicenses([]);
+      }
+    };
+
     const loadUser = async () => {
       if (!token) {
         window.location.href = "/app/login";
@@ -202,6 +268,7 @@ import Layout from "../../layouts/Layout.astro";
         dashboardContent.hidden = false;
 
         loadOrders();
+        loadLicenses();
       } catch (error) {
         loadingState.hidden = true;
         showMessage("No se pudo conectar con la API. Intenta nuevamente.", "error");
@@ -391,5 +458,40 @@ import Layout from "../../layouts/Layout.astro";
         grid-template-columns: 1fr;
       }
     }
+
+    .licenses-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .license-item {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+    }
+
+    .license-item strong,
+    .license-item span,
+    .license-item small {
+      display: block;
+    }
+
+    .license-item strong {
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .license-item span {
+      color: rgba(255,255,255,.78);
+      margin-top: 5px;
+    }
+
+    .license-item small {
+      color: rgba(255,255,255,.52);
+      margin-top: 5px;
+    }
+
   </style>
 </Layout>
