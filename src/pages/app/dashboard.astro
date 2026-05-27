@@ -892,4 +892,41 @@ import Layout from "../../layouts/Layout.astro";
   }
 </style>
 
+
+<style is:global>
+  /* Ajuste premium: licencia más ancha en panel cliente */
+  @media (min-width: 980px) {
+    .cards-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      align-items: stretch !important;
+    }
+
+    .orders-card {
+      grid-column: span 1 !important;
+    }
+
+    .licenses-card {
+      grid-column: span 2 !important;
+    }
+
+    .licenses-card .license-pro-item {
+      max-width: none !important;
+    }
+
+    .licenses-card .license-meta-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    .licenses-card .license-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .dashboard-shell {
+      width: min(1320px, 100%) !important;
+    }
+  }
+</style>
+
 </Layout>
