@@ -194,19 +194,51 @@ import Layout from "../../layouts/Layout.astro";
         return;
       }
 
-      licensesIntro.textContent = "Estas son tus licencias disponibles.";
+      licensesIntro.textContent = "Licencias asociadas a tus compras aprobadas.";
 
       licenses.forEach((license) => {
         const item = document.createElement("div");
-        item.className = "license-item";
+        item.className = "license-pro-item";
 
         item.innerHTML = `
-          <strong>${license.product_name || "Producto"}</strong>
-          <span>Licencia: ${license.license_display || "—"}</span>
-          <span>Estado: ${getLicenseStatusLabel(license.status)}</span>
-          <span>Activaciones: ${license.activation_count ?? 0} / ${license.max_activations ?? 1}</span>
-          <small>Orden: ${license.order_number || "—"}</small>
-          <small>Creada: ${license.created_at || "—"}</small>
+          <div class="license-pro-header">
+            <div>
+              <span class="license-kicker">Licencia de software</span>
+              <strong>${license.product_name || "Producto"}</strong>
+            </div>
+            <span class="license-status license-status-${license.status || "active"}">
+              ${getLicenseStatusLabel(license.status)}
+            </span>
+          </div>
+
+          <div class="license-code-box">
+            <span>Código seguro</span>
+            <strong>${license.license_display || "—"}</strong>
+          </div>
+
+          <div class="license-meta-grid">
+            <div>
+              <span>Activaciones</span>
+              <strong>${license.activation_count ?? 0} / ${license.max_activations ?? 1}</strong>
+            </div>
+            <div>
+              <span>Orden</span>
+              <strong>${license.order_number || "—"}</strong>
+            </div>
+            <div>
+              <span>Creada</span>
+              <strong>${license.created_at || "—"}</strong>
+            </div>
+          </div>
+
+          <div class="license-note">
+            La activación principal será con tu correo y contraseña de NexisHub desde NutriPlan Nexis.
+          </div>
+
+          <div class="license-actions">
+            <button type="button" disabled>Descarga próximamente</button>
+            <button type="button" disabled>Activación por PC próximamente</button>
+          </div>
         `;
 
         licensesList.appendChild(item);
@@ -491,6 +523,133 @@ import Layout from "../../layouts/Layout.astro";
     .license-item small {
       color: rgba(255,255,255,.52);
       margin-top: 5px;
+    }
+
+
+    .license-pro-item {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.13);
+      background:
+        linear-gradient(135deg, rgba(255, 106, 0, .10), rgba(255,255,255,.04)),
+        rgba(255,255,255,.045);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    }
+
+    .license-pro-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .license-kicker,
+    .license-code-box span,
+    .license-meta-grid span {
+      display: block;
+      color: rgba(255,255,255,.52);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .license-pro-header strong {
+      display: block;
+      margin-top: 4px;
+      color: #fff;
+      font-size: 18px;
+    }
+
+    .license-status {
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.78);
+    }
+
+    .license-status-active {
+      background: rgba(35, 213, 120, .13);
+      color: #9ff0c1;
+    }
+
+    .license-code-box {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255, 179, 0, .28);
+      background: rgba(0,0,0,.18);
+    }
+
+    .license-code-box strong {
+      display: block;
+      margin-top: 6px;
+      color: #ffcf8a;
+      font-size: 17px;
+      letter-spacing: .03em;
+      overflow-wrap: anywhere;
+    }
+
+    .license-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .license-meta-grid div {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      min-width: 0;
+    }
+
+    .license-meta-grid strong {
+      display: block;
+      margin-top: 5px;
+      color: rgba(255,255,255,.88);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .license-note {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(100, 181, 246, .10);
+      color: rgba(255,255,255,.72);
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .license-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .license-actions button {
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.52);
+      font-weight: 900;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 720px) {
+      .license-meta-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .license-pro-header {
+        display: grid;
+      }
     }
 
   </style>

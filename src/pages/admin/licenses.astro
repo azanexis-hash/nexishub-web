@@ -3,18 +3,19 @@ import Layout from "../../layouts/Layout.astro";
 ---
 
 <Layout
-  title="Usuarios Admin | AzaNexis"
-  description="Administración de usuarios de AzaNexis."
+  title="Licencias Admin | AzaNexis"
+  description="Administración visual de licencias AzaNexis."
 >
   <main class="admin-page">
     <section class="admin-shell">
       <header class="admin-header">
         <div>
           <span class="eyebrow">AzaNexis Admin</span>
-          <h1>Usuarios</h1>
+          <h1>Licencias</h1>
           <p>
-            Lista administrativa de usuarios registrados. Las contraseñas no se muestran
-            nunca por seguridad.
+            Visualiza las licencias generadas, su cliente, producto, orden,
+            estado y activaciones disponibles. La clave completa no se muestra
+            por seguridad.
           </p>
         </div>
 
@@ -23,41 +24,25 @@ import Layout from "../../layouts/Layout.astro";
           <a href="/softwares">Catálogo</a>
           <a href="/admin/dashboard">Dashboard</a>
           <a href="/admin/orders">Órdenes</a>
-          <a href="/admin/licenses">Licencias</a>
+          <a href="/admin/users">Usuarios</a>
           <button id="logoutBtn" type="button">Cerrar sesión</button>
         </div>
       </header>
 
       <section class="tools-card">
         <label>
-          Buscar usuario
-          <input id="searchInput" type="search" placeholder="Nombre, correo o apodo..." />
+          Buscar licencia
+          <input id="searchInput" type="search" placeholder="Licencia, cliente, correo, producto, orden o estado..." />
         </label>
         <button id="searchBtn" type="button">Buscar</button>
         <button id="clearBtn" type="button">Limpiar</button>
       </section>
 
       <section id="loadingState" class="panel-card">
-        Cargando usuarios...
+        Cargando licencias...
       </section>
 
-      <section id="usersContent" class="users-card" hidden>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Apodo</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Registro</th>
-              </tr>
-            </thead>
-            <tbody id="usersTableBody"></tbody>
-          </table>
-        </div>
-      </section>
+      <section id="licensesContent" class="licenses-grid" hidden></section>
 
       <p id="messageBox" class="message-box" hidden></p>
     </section>
@@ -68,13 +53,19 @@ import Layout from "../../layouts/Layout.astro";
 
     const token = localStorage.getItem("nexishub_admin_token");
     const loadingState = document.querySelector("#loadingState");
-    const usersContent = document.querySelector("#usersContent");
+    const licensesContent = document.querySelector("#licensesContent");
     const messageBox = document.querySelector("#messageBox");
     const logoutBtn = document.querySelector("#logoutBtn");
     const searchInput = document.querySelector("#searchInput");
     const searchBtn = document.querySelector("#searchBtn");
     const clearBtn = document.querySelector("#clearBtn");
-    const usersTableBody = document.querySelector("#usersTableBody");
+
+    const statusLabels = {
+      active: "Activa",
+      suspended: "Suspendida",
+      revoked: "Revocada",
+      expired: "Expirada",
+    };
 
     const showMessage = (text, type = "info") => {
       messageBox.hidden = false;
@@ -93,46 +84,80 @@ import Layout from "../../layouts/Layout.astro";
       window.location.href = "/admin/login";
     };
 
+    const getStatusLabel = (status) => statusLabels[status] || status || "—";
+
     logoutBtn.addEventListener("click", logout);
 
-    const formatDate = (value) => {
-      if (!value) return "—";
-      return value;
-    };
+    const renderLicenses = (licenses) => {
+      licensesContent.innerHTML = "";
 
-    const renderUsers = (users) => {
-      usersTableBody.innerHTML = "";
-
-      if (!users.length) {
-        usersTableBody.innerHTML = `
-          <tr>
-            <td colspan="6" class="empty-cell">No se encontraron usuarios.</td>
-          </tr>
+      if (!licenses.length) {
+        licensesContent.innerHTML = `
+          <article class="panel-card empty-card">
+            No se encontraron licencias.
+          </article>
         `;
         return;
       }
 
-      users.forEach((user) => {
-        const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+      licenses.forEach((license) => {
+        const clientName = `${license.user_first_name || ""} ${license.user_last_name || ""}`.trim();
 
-        const tr = document.createElement("tr");
+        const card = document.createElement("article");
+        card.className = "license-card";
 
-        tr.innerHTML = `
-          <td>
-            <strong>${fullName || "—"}</strong>
-          </td>
-          <td>${user.email || "—"}</td>
-          <td>${user.display_name || "—"}</td>
-          <td><span class="badge">${user.role || "—"}</span></td>
-          <td><span class="status">${user.status || "—"}</span></td>
-          <td>${formatDate(user.created_at)}</td>
+        card.innerHTML = `
+          <div class="license-card-top">
+            <div>
+              <span class="license-kicker">Licencia</span>
+              <h2>${license.product_name || "Producto"}</h2>
+            </div>
+            <span class="status status-${license.status || "active"}">${getStatusLabel(license.status)}</span>
+          </div>
+
+          <div class="license-code">
+            <span>Código seguro</span>
+            <strong>${license.license_display || "—"}</strong>
+          </div>
+
+          <div class="license-info">
+            <div>
+              <span>Cliente</span>
+              <strong>${clientName || "—"}</strong>
+              <small>${license.user_email || "—"}</small>
+            </div>
+
+            <div>
+              <span>Orden</span>
+              <strong>${license.order_number || "—"}</strong>
+              <small>Estado orden: ${license.order_status || "—"}</small>
+            </div>
+
+            <div>
+              <span>Activaciones</span>
+              <strong>${license.activation_count ?? 0} / ${license.max_activations ?? 1}</strong>
+              <small>Por PC autorizada</small>
+            </div>
+
+            <div>
+              <span>Creada</span>
+              <strong>${license.created_at || "—"}</strong>
+              <small>Vence: ${license.expires_at || "Sin vencimiento"}</small>
+            </div>
+          </div>
+
+          <div class="license-actions">
+            <a href="/admin/orders">Ver órdenes</a>
+            <button type="button" disabled>Activaciones próximamente</button>
+            <button type="button" disabled>Suspender próximamente</button>
+          </div>
         `;
 
-        usersTableBody.appendChild(tr);
+        licensesContent.appendChild(card);
       });
     };
 
-    const loadUsers = async () => {
+    const loadLicenses = async () => {
       if (!token) {
         window.location.href = "/admin/login";
         return;
@@ -140,11 +165,11 @@ import Layout from "../../layouts/Layout.astro";
 
       const query = searchInput.value.trim();
       const url = query
-        ? `${API_URL}/admin/users?q=${encodeURIComponent(query)}`
-        : `${API_URL}/admin/users`;
+        ? `${API_URL}/admin/licenses?q=${encodeURIComponent(query)}`
+        : `${API_URL}/admin/licenses`;
 
       loadingState.hidden = false;
-      usersContent.hidden = true;
+      licensesContent.hidden = true;
       hideMessage();
 
       try {
@@ -161,30 +186,30 @@ import Layout from "../../layouts/Layout.astro";
           return;
         }
 
-        renderUsers(data.users || []);
+        renderLicenses(data.licenses || []);
 
         loadingState.hidden = true;
-        usersContent.hidden = false;
+        licensesContent.hidden = false;
       } catch (error) {
         loadingState.hidden = true;
         showMessage("No se pudo conectar con la API administrativa.", "error");
       }
     };
 
-    searchBtn.addEventListener("click", loadUsers);
+    searchBtn.addEventListener("click", loadLicenses);
 
     clearBtn.addEventListener("click", () => {
       searchInput.value = "";
-      loadUsers();
+      loadLicenses();
     });
 
     searchInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
-        loadUsers();
+        loadLicenses();
       }
     });
 
-    loadUsers();
+    loadLicenses();
   </script>
 
   <style>
@@ -199,7 +224,7 @@ import Layout from "../../layouts/Layout.astro";
     }
 
     .admin-shell {
-      width: min(1180px, 100%);
+      width: min(1280px, 100%);
       margin: 0 auto;
     }
 
@@ -241,10 +266,12 @@ import Layout from "../../layouts/Layout.astro";
       align-items: center;
       flex-wrap: wrap;
       justify-content: flex-end;
+      max-width: 680px;
     }
 
     .header-actions a,
-    button {
+    button,
+    .license-actions a {
       padding: 13px 16px;
       border: 1px solid rgba(255,255,255,.16);
       border-radius: 16px;
@@ -256,14 +283,14 @@ import Layout from "../../layouts/Layout.astro";
       font-size: 14px;
     }
 
-    .header-actions a:hover,
-    button:hover {
-      background: rgba(255,255,255,.1);
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
     }
 
     .tools-card,
     .panel-card,
-    .users-card {
+    .license-card {
       padding: 24px;
       border: 1px solid rgba(255,255,255,.12);
       border-radius: 28px;
@@ -298,66 +325,104 @@ import Layout from "../../layouts/Layout.astro";
       font-size: 15px;
     }
 
-    input:focus {
-      border-color: rgba(255, 159, 67, .9);
-      box-shadow: 0 0 0 4px rgba(255, 159, 67, .12);
+    .licenses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
     }
 
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
+    .license-card {
+      display: grid;
+      gap: 16px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 860px;
+    .license-card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
     }
 
-    th,
-    td {
-      padding: 15px 12px;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.78);
-      vertical-align: top;
-    }
-
-    th {
-      color: #ffb36b;
-      font-size: 13px;
+    .license-kicker,
+    .license-code span,
+    .license-info span {
+      display: block;
+      color: rgba(255,255,255,.52);
+      font-size: 12px;
+      font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: .08em;
+      letter-spacing: .06em;
     }
 
-    td {
-      overflow-wrap: anywhere;
-    }
-
-    td strong {
+    .license-card h2 {
+      margin: 6px 0 0;
       color: #fff;
+      font-size: 24px;
     }
 
-    .badge,
     .status {
       display: inline-flex;
-      padding: 6px 10px;
+      padding: 7px 10px;
       border-radius: 999px;
-      background: rgba(255, 106, 0, .12);
-      color: #ffb36b;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 900;
+      background: rgba(255,255,255,.08);
+      white-space: nowrap;
     }
 
-    .status {
+    .status-active {
       background: rgba(35, 213, 120, .13);
       color: #9ff0c1;
     }
 
-    .empty-cell {
-      text-align: center;
-      color: rgba(255,255,255,.55);
-      padding: 28px;
+    .license-code {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px dashed rgba(255, 179, 0, .32);
+      background: rgba(0,0,0,.20);
+    }
+
+    .license-code strong {
+      display: block;
+      margin-top: 6px;
+      color: #ffcf8a;
+      font-size: 18px;
+      letter-spacing: .03em;
+      overflow-wrap: anywhere;
+    }
+
+    .license-info {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .license-info div {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      min-width: 0;
+    }
+
+    .license-info strong {
+      display: block;
+      margin-top: 5px;
+      color: rgba(255,255,255,.9);
+      overflow-wrap: anywhere;
+    }
+
+    .license-info small {
+      display: block;
+      margin-top: 5px;
+      color: rgba(255,255,255,.52);
+      overflow-wrap: anywhere;
+    }
+
+    .license-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .message-box {
@@ -382,6 +447,10 @@ import Layout from "../../layouts/Layout.astro";
 
       .header-actions {
         justify-content: flex-start;
+      }
+
+      .license-info {
+        grid-template-columns: 1fr;
       }
     }
   </style>
