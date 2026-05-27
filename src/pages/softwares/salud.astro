@@ -336,6 +336,101 @@ import Layout from "../../layouts/Layout.astro";
         </div>
       </div>
     </section>
+    <!-- OPINIONES FIJAS INICIALES:
+         Estas 5 opiniones son contenido inicial de apoyo comercial.
+         En el futuro se pueden eliminar una por una o reemplazar por reseñas reales
+         conectadas a product_reviews, compra aprobada/licencia activa y moderación admin. -->
+    <section class="section container reviews-section">
+      <div class="section-title reviews-title">
+        <span class="pill">Opiniones destacadas</span>
+        <h2>Profesionales que confían en un flujo nutricional más ordenado.</h2>
+        <p>
+          Comentarios iniciales para mostrar el valor de NutriPlan Nexis en consulta,
+          organización clínica, entrega profesional y ahorro de tiempo. En futuras fases,
+          las opiniones podrán publicarse desde compradores con licencia activa y moderación previa.
+        </p>
+      </div>
+
+      <div class="reviews-grid">
+        <article class="review-card featured">
+          <div class="review-top">
+            <div>
+              <strong>Mariana Gutiérrez</strong>
+              <span>@MarianaNutri4821 · Nutrición clínica</span>
+            </div>
+            <b>★★★★★</b>
+          </div>
+          <p>
+            “Me gusta que el flujo vaya desde el cálculo hasta el menú final. Ayuda a reducir
+            trabajo repetitivo y hace que la entrega al paciente se vea más profesional.”
+          </p>
+        </article>
+
+        <article class="review-card">
+          <div class="review-top">
+            <div>
+              <strong>Daniel Rojas</strong>
+              <span>@DaniFitNexis7304 · Nutrición deportiva</span>
+            </div>
+            <b>★★★★★</b>
+          </div>
+          <p>
+            “La parte de equivalentes y distribución por tiempos de comida facilita organizar
+            planes más claros. Es útil para consultas donde se manejan varias opciones.”
+          </p>
+        </article>
+
+        <article class="review-card">
+          <div class="review-top">
+            <div>
+              <strong>Paola Hernández</strong>
+              <span>@PaoConsulta1958 · Consulta privada</span>
+            </div>
+            <b>★★★★★</b>
+          </div>
+          <p>
+            “La vista previa, PDF y Excel son puntos fuertes. Tener todo en una sola herramienta
+            ayuda a cuidar la presentación del servicio profesional.”
+          </p>
+        </article>
+
+        <article class="review-card">
+          <div class="review-top">
+            <div>
+              <strong>Ricardo Méndez</strong>
+              <span>@RicardoNutri6042 · Control de peso</span>
+            </div>
+            <b>★★★★★</b>
+          </div>
+          <p>
+            “El enfoque local es atractivo porque permite trabajar con pacientes sin depender
+            todo el tiempo de una plataforma en línea.”
+          </p>
+        </article>
+
+        <article class="review-card">
+          <div class="review-top">
+            <div>
+              <strong>Fernanda López</strong>
+              <span>@FerNutri3916 · Educación nutricional</span>
+            </div>
+            <b>★★★★★</b>
+          </div>
+          <p>
+            “Se nota pensado para consulta real: cálculos, opciones, menú editable y entrega.
+            Me parece una herramienta con buen potencial para nutriólogos independientes.”
+          </p>
+        </article>
+      </div>
+
+      <div class="reviews-note">
+        <strong>Próxima fase:</strong>
+        las opiniones podrán gestionarse desde NexisHub con compra/licencia activa,
+        apodo público, moderación previa y opción de ocultar o eliminar comentarios inadecuados.
+      </div>
+    </section>
+
+
 
     <section class="section container">
       <div class="final-cta">
@@ -915,4 +1010,108 @@ import Layout from "../../layouts/Layout.astro";
       order: initial;
     }
   }
+
+  /* Reviews section NutriPlan */
+  .reviews-section {
+    position: relative;
+  }
+
+  .reviews-title {
+    margin-bottom: 28px;
+  }
+
+  .reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .review-card {
+    display: grid;
+    gap: 18px;
+    min-height: 240px;
+    padding: 24px;
+    border-radius: 28px;
+    border: 1px solid rgba(255,255,255,.11);
+    background:
+      radial-gradient(circle at 0% 0%, rgba(255,106,0,.12), transparent 36%),
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+      rgba(17,17,20,.76);
+    box-shadow: 0 24px 70px rgba(0,0,0,.30);
+  }
+
+  .review-card.featured {
+    grid-column: span 2;
+    background:
+      radial-gradient(circle at 0% 0%, rgba(255,106,0,.20), transparent 38%),
+      linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.022)),
+      rgba(17,17,20,.82);
+    border-color: rgba(255,106,0,.24);
+  }
+
+  .review-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .review-top strong {
+    display: block;
+    color: var(--text);
+    font-size: 20px;
+    line-height: 1.1;
+  }
+
+  .review-top span {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .review-top b {
+    color: #ffcf8a;
+    letter-spacing: .06em;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+
+  .review-card p {
+    margin: 0;
+    color: rgba(255,255,255,.76);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  .reviews-note {
+    margin-top: 18px;
+    padding: 18px 20px;
+    border-radius: 22px;
+    border: 1px solid rgba(100,181,246,.18);
+    background: rgba(100,181,246,.08);
+    color: rgba(255,255,255,.72);
+    line-height: 1.6;
+  }
+
+  .reviews-note strong {
+    color: #bbdefb;
+  }
+
+  @media (max-width: 980px) {
+    .reviews-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .review-card.featured {
+      grid-column: span 1;
+    }
+
+    .review-top {
+      display: grid;
+    }
+  }
+
+
 </style>
