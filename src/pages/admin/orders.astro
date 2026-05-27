@@ -14,8 +14,8 @@ import Layout from "../../layouts/Layout.astro";
           <h1>Órdenes</h1>
           <p>
             Solicitudes de compra registradas por usuarios. Desde aquí puedes
-            cambiar el estado manual de cada orden mientras se prepara el flujo
-            de pagos, licencias y descargas protegidas.
+            cambiar el estado manual de cada orden y generar licencias para
+            órdenes aprobadas.
           </p>
         </div>
 
@@ -23,6 +23,7 @@ import Layout from "../../layouts/Layout.astro";
           <a href="/">Inicio</a>
           <a href="/softwares">Catálogo</a>
           <a href="/admin/dashboard">Dashboard</a>
+          <a href="/admin/orders">Órdenes</a>
           <a href="/admin/users">Usuarios</a>
           <a href="/admin/licenses">Licencias</a>
           <button id="logoutBtn" type="button">Cerrar sesión</button>
@@ -124,7 +125,7 @@ import Layout from "../../layouts/Layout.astro";
     };
 
     const setActionButtonsDisabled = (disabled) => {
-      document.querySelectorAll("[data-order-action]").forEach((button) => {
+      document.querySelectorAll("[data-order-action], [data-license-action]").forEach((button) => {
         button.disabled = disabled;
       });
     };
@@ -174,7 +175,61 @@ import Layout from "../../layouts/Layout.astro";
       }
     };
 
-    const renderActionButtons = (order) => {
+    const generateLicense = async (orderNumber) => {
+      if (!token) {
+        window.location.href = "/admin/login";
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `¿Confirmas generar una licencia para la orden ${orderNumber}?`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      setActionButtonsDisabled(true);
+      showMessage(`Generando licencia para ${orderNumber}...`, "info");
+
+      try {
+        const response = await fetch(`${API_URL}/admin/licenses/generate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            order_number: orderNumber,
+            max_activations: 1,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          showMessage(data.message || "No se pudo generar la licencia.", "error");
+          setActionButtonsDisabled(false);
+          return;
+        }
+
+        if (data.license_key_visible_once && data.license_key) {
+          showMessage(
+            `Licencia generada correctamente. Clave visible una sola vez: ${data.license_key}`,
+            "success"
+          );
+        } else {
+          showMessage(data.message || "La orden ya tiene licencia generada.", "success");
+        }
+
+        await loadOrders();
+      } catch (error) {
+        showMessage("Error de conexión al generar la licencia.", "error");
+        setActionButtonsDisabled(false);
+      }
+    };
+
+    const renderStatusButtons = (order) => {
       const orderNumber = order.order_number || "";
       const currentStatus = order.status || "pending";
 
@@ -203,6 +258,34 @@ import Layout from "../../layouts/Layout.astro";
           `;
         })
         .join("");
+    };
+
+    const renderLicenseButton = (order) => {
+      const orderNumber = order.order_number || "";
+
+      if (order.status !== "approved") {
+        return `
+          <button
+            class="license-generate-action"
+            type="button"
+            disabled
+            title="Primero aprueba la orden"
+          >
+            Generar licencia
+          </button>
+        `;
+      }
+
+      return `
+        <button
+          class="license-generate-action"
+          type="button"
+          data-license-action="true"
+          data-order-number="${orderNumber}"
+        >
+          Generar licencia
+        </button>
+      `;
     };
 
     const renderOrders = (orders) => {
@@ -245,7 +328,14 @@ import Layout from "../../layouts/Layout.astro";
           </td>
           <td>
             <div class="order-actions">
-              ${renderActionButtons(order)}
+              <div class="status-actions-group">
+                ${renderStatusButtons(order)}
+              </div>
+
+              <div class="license-actions-group">
+                ${renderLicenseButton(order)}
+                <a class="view-licenses-link" href="/admin/licenses">Ver licencias</a>
+              </div>
             </div>
           </td>
         `;
@@ -256,6 +346,12 @@ import Layout from "../../layouts/Layout.astro";
       document.querySelectorAll("[data-order-action]").forEach((button) => {
         button.addEventListener("click", () => {
           updateOrderStatus(button.dataset.orderNumber, button.dataset.status);
+        });
+      });
+
+      document.querySelectorAll("[data-license-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          generateLicense(button.dataset.orderNumber);
         });
       });
     };
@@ -327,7 +423,7 @@ import Layout from "../../layouts/Layout.astro";
     }
 
     .admin-shell {
-      width: min(1280px, 100%);
+      width: min(1320px, 100%);
       margin: 0 auto;
     }
 
@@ -369,7 +465,7 @@ import Layout from "../../layouts/Layout.astro";
       align-items: center;
       flex-wrap: wrap;
       justify-content: flex-end;
-      max-width: 620px;
+      max-width: 720px;
     }
 
     .header-actions a,
@@ -388,6 +484,11 @@ import Layout from "../../layouts/Layout.astro";
     .header-actions a:hover,
     button:hover {
       background: rgba(255,255,255,.1);
+    }
+
+    button:disabled {
+      opacity: .42;
+      cursor: not-allowed;
     }
 
     .tools-card,
@@ -440,7 +541,7 @@ import Layout from "../../layouts/Layout.astro";
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1120px;
+      min-width: 1180px;
     }
 
     th,
@@ -506,17 +607,31 @@ import Layout from "../../layouts/Layout.astro";
     }
 
     .order-actions {
+      display: grid;
+      gap: 10px;
+      min-width: 300px;
+    }
+
+    .status-actions-group,
+    .license-actions-group {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      min-width: 260px;
     }
 
-    .status-action {
+    .status-action,
+    .license-generate-action,
+    .view-licenses-link {
       padding: 9px 11px;
       border-radius: 12px;
       font-size: 12px;
       white-space: nowrap;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      font-weight: 900;
+      text-decoration: none;
+      cursor: pointer;
     }
 
     .status-action-approved {
@@ -539,9 +654,14 @@ import Layout from "../../layouts/Layout.astro";
       color: #bbdefb;
     }
 
-    .status-action:disabled {
-      opacity: .38;
-      cursor: not-allowed;
+    .license-generate-action {
+      border-color: rgba(255, 179, 0, .38);
+      color: #ffcf8a;
+      background: rgba(255, 106, 0, .11);
+    }
+
+    .view-licenses-link {
+      color: rgba(255,255,255,.78);
     }
 
     .empty-cell {
@@ -578,6 +698,72 @@ import Layout from "../../layouts/Layout.astro";
       .header-actions {
         justify-content: flex-start;
       }
+    }
+  </style>
+
+  <style is:global>
+    .order-actions {
+      display: grid !important;
+      gap: 10px !important;
+      min-width: 300px !important;
+    }
+
+    .status-actions-group,
+    .license-actions-group {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 8px !important;
+    }
+
+    .status-action,
+    .license-generate-action,
+    .view-licenses-link {
+      padding: 9px 11px !important;
+      border-radius: 12px !important;
+      font-size: 12px !important;
+      white-space: nowrap !important;
+      border: 1px solid rgba(255,255,255,.14) !important;
+      background: rgba(255,255,255,.06) !important;
+      color: #fff !important;
+      font-weight: 900 !important;
+      text-decoration: none !important;
+      cursor: pointer !important;
+    }
+
+    .license-generate-action {
+      border-color: rgba(255, 179, 0, .38) !important;
+      color: #ffcf8a !important;
+      background: rgba(255, 106, 0, .11) !important;
+    }
+
+    .view-licenses-link {
+      color: rgba(255,255,255,.78) !important;
+    }
+
+    .status-action-approved {
+      border-color: rgba(35, 213, 120, .32) !important;
+      color: #9ff0c1 !important;
+    }
+
+    .status-action-pending {
+      border-color: rgba(255, 179, 0, .32) !important;
+      color: #ffb36b !important;
+    }
+
+    .status-action-cancelled {
+      border-color: rgba(255, 71, 87, .32) !important;
+      color: #ffb3ba !important;
+    }
+
+    .status-action-refunded {
+      border-color: rgba(100, 181, 246, .32) !important;
+      color: #bbdefb !important;
+    }
+
+    .status-action:disabled,
+    .license-generate-action:disabled {
+      opacity: .42 !important;
+      cursor: not-allowed !important;
     }
   </style>
 </Layout>
