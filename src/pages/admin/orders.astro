@@ -13,8 +13,9 @@ import Layout from "../../layouts/Layout.astro";
           <span class="eyebrow">AzaNexis Admin</span>
           <h1>Órdenes</h1>
           <p>
-            Solicitudes de compra registradas por usuarios. Esta vista prepara
-            el futuro flujo de pagos, licencias y descargas protegidas.
+            Solicitudes de compra registradas por usuarios. Desde aquí puedes
+            cambiar el estado manual de cada orden mientras se prepara el flujo
+            de pagos, licencias y descargas protegidas.
           </p>
         </div>
 
@@ -51,6 +52,7 @@ import Layout from "../../layouts/Layout.astro";
                 <th>Total</th>
                 <th>Estado</th>
                 <th>Fecha</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="ordersTableBody"></tbody>
@@ -74,6 +76,13 @@ import Layout from "../../layouts/Layout.astro";
     const searchBtn = document.querySelector("#searchBtn");
     const clearBtn = document.querySelector("#clearBtn");
     const ordersTableBody = document.querySelector("#ordersTableBody");
+
+    const statusLabels = {
+      pending: "Pendiente",
+      approved: "Aprobada",
+      cancelled: "Cancelada",
+      refunded: "Reembolsada",
+    };
 
     const formatMoney = (amount, currency) => {
       const value = Number(amount || 0) / 100;
@@ -102,13 +111,106 @@ import Layout from "../../layouts/Layout.astro";
 
     logoutBtn.addEventListener("click", logout);
 
+    const getStatusLabel = (status) => {
+      return statusLabels[status] || status || "—";
+    };
+
+    const getStatusClass = (status) => {
+      if (status === "approved") return "status approved";
+      if (status === "cancelled") return "status cancelled";
+      if (status === "refunded") return "status refunded";
+      return "status pending";
+    };
+
+    const setActionButtonsDisabled = (disabled) => {
+      document.querySelectorAll("[data-order-action]").forEach((button) => {
+        button.disabled = disabled;
+      });
+    };
+
+    const updateOrderStatus = async (orderNumber, status) => {
+      if (!token) {
+        window.location.href = "/admin/login";
+        return;
+      }
+
+      const label = getStatusLabel(status);
+      const confirmed = window.confirm(`¿Confirmas cambiar la orden ${orderNumber} a "${label}"?`);
+
+      if (!confirmed) {
+        return;
+      }
+
+      setActionButtonsDisabled(true);
+      showMessage(`Actualizando orden ${orderNumber}...`, "info");
+
+      try {
+        const response = await fetch(`${API_URL}/admin/orders/update-status`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            order_number: orderNumber,
+            status,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          showMessage(data.message || "No se pudo actualizar la orden.", "error");
+          setActionButtonsDisabled(false);
+          return;
+        }
+
+        showMessage(`Orden ${orderNumber} actualizada a ${label}.`, "success");
+        await loadOrders();
+      } catch (error) {
+        showMessage("Error de conexión al actualizar la orden.", "error");
+        setActionButtonsDisabled(false);
+      }
+    };
+
+    const renderActionButtons = (order) => {
+      const orderNumber = order.order_number || "";
+      const currentStatus = order.status || "pending";
+
+      const actions = [
+        { status: "approved", label: "Aprobar" },
+        { status: "pending", label: "Pendiente" },
+        { status: "cancelled", label: "Cancelar" },
+        { status: "refunded", label: "Reembolsar" },
+      ];
+
+      return actions
+        .map((action) => {
+          const disabled = currentStatus === action.status ? "disabled" : "";
+
+          return `
+            <button
+              class="status-action status-action-${action.status}"
+              type="button"
+              data-order-action="true"
+              data-order-number="${orderNumber}"
+              data-status="${action.status}"
+              ${disabled}
+            >
+              ${action.label}
+            </button>
+          `;
+        })
+        .join("");
+    };
+
     const renderOrders = (orders) => {
       ordersTableBody.innerHTML = "";
 
       if (!orders.length) {
         ordersTableBody.innerHTML = `
           <tr>
-            <td colspan="6" class="empty-cell">No se encontraron órdenes.</td>
+            <td colspan="7" class="empty-cell">No se encontraron órdenes.</td>
           </tr>
         `;
         return;
@@ -122,7 +224,7 @@ import Layout from "../../layouts/Layout.astro";
         tr.innerHTML = `
           <td>
             <strong>${order.order_number || "—"}</strong>
-            <small>${order.provider || "—"}</small>
+            <small>${order.provider_status || order.provider || "—"}</small>
           </td>
           <td>
             <strong>${clientName || "—"}</strong>
@@ -133,11 +235,27 @@ import Layout from "../../layouts/Layout.astro";
             <small>${order.product_slug || "—"}</small>
           </td>
           <td>${formatMoney(order.total, order.currency)}</td>
-          <td><span class="status">${order.status || "—"}</span></td>
-          <td>${order.created_at || "—"}</td>
+          <td><span class="${getStatusClass(order.status)}">${getStatusLabel(order.status)}</span></td>
+          <td>
+            <strong>${order.created_at || "—"}</strong>
+            <small>Pago: ${order.paid_at || "—"}</small>
+            <small>Cancelado: ${order.cancelled_at || "—"}</small>
+            <small>Reembolso: ${order.refunded_at || "—"}</small>
+          </td>
+          <td>
+            <div class="order-actions">
+              ${renderActionButtons(order)}
+            </div>
+          </td>
         `;
 
         ordersTableBody.appendChild(tr);
+      });
+
+      document.querySelectorAll("[data-order-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          updateOrderStatus(button.dataset.orderNumber, button.dataset.status);
+        });
       });
     };
 
@@ -208,7 +326,7 @@ import Layout from "../../layouts/Layout.astro";
     }
 
     .admin-shell {
-      width: min(1180px, 100%);
+      width: min(1280px, 100%);
       margin: 0 auto;
     }
 
@@ -321,7 +439,7 @@ import Layout from "../../layouts/Layout.astro";
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 940px;
+      min-width: 1120px;
     }
 
     th,
@@ -362,10 +480,67 @@ import Layout from "../../layouts/Layout.astro";
       display: inline-flex;
       padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(255, 106, 0, .12);
-      color: #ffb36b;
       font-size: 13px;
       font-weight: 900;
+    }
+
+    .status.pending {
+      background: rgba(255, 106, 0, .12);
+      color: #ffb36b;
+    }
+
+    .status.approved {
+      background: rgba(35, 213, 120, .13);
+      color: #9ff0c1;
+    }
+
+    .status.cancelled {
+      background: rgba(255, 71, 87, .14);
+      color: #ffb3ba;
+    }
+
+    .status.refunded {
+      background: rgba(100, 181, 246, .14);
+      color: #bbdefb;
+    }
+
+    .order-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-width: 260px;
+    }
+
+    .status-action {
+      padding: 9px 11px;
+      border-radius: 12px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .status-action-approved {
+      border-color: rgba(35, 213, 120, .32);
+      color: #9ff0c1;
+    }
+
+    .status-action-pending {
+      border-color: rgba(255, 179, 0, .32);
+      color: #ffb36b;
+    }
+
+    .status-action-cancelled {
+      border-color: rgba(255, 71, 87, .32);
+      color: #ffb3ba;
+    }
+
+    .status-action-refunded {
+      border-color: rgba(100, 181, 246, .32);
+      color: #bbdefb;
+    }
+
+    .status-action:disabled {
+      opacity: .38;
+      cursor: not-allowed;
     }
 
     .empty-cell {
@@ -380,6 +555,11 @@ import Layout from "../../layouts/Layout.astro";
       border-radius: 16px;
       line-height: 1.5;
       background: rgba(255,255,255,.08);
+    }
+
+    .message-box[data-type="success"] {
+      background: rgba(35, 213, 120, .13);
+      color: #9ff0c1;
     }
 
     .message-box[data-type="error"] {
