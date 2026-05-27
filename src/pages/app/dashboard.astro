@@ -70,6 +70,12 @@ import Layout from "../../layouts/Layout.astro";
             <div id="licensesList" class="licenses-list"></div>
           </article>
 
+          <article class="panel-card activations-card">
+            <h2>Activaciones</h2>
+            <p id="activationsIntro">Cargando tus activaciones...</p>
+            <div id="activationsList" class="client-activations-list"></div>
+          </article>
+
           <article class="panel-card">
             <h2>Descargas</h2>
             <p>Próximamente podrás descargar instaladores protegidos.</p>
@@ -266,6 +272,108 @@ import Layout from "../../layouts/Layout.astro";
       }
     };
 
+
+    const getActivationStatusLabel = (status) => {
+      const labels = {
+        active: "Activa",
+        revoked: "Revocada",
+      };
+
+      return labels[status] || status || "—";
+    };
+
+    const renderActivations = (activations) => {
+      const activationsIntro = document.querySelector("#activationsIntro");
+      const activationsList = document.querySelector("#activationsList");
+
+      if (!activationsIntro || !activationsList) return;
+
+      activationsList.innerHTML = "";
+
+      if (!activations.length) {
+        activationsIntro.textContent = "Todavía no tienes PCs activadas.";
+        return;
+      }
+
+      activationsIntro.textContent = "Estas son las PCs asociadas a tus licencias.";
+
+      activations.forEach((activation) => {
+        const item = document.createElement("div");
+        item.className = "client-activation-item";
+
+        item.innerHTML = `
+          <div class="client-activation-header">
+            <div>
+              <span>Equipo autorizado</span>
+              <strong>${activation.machine_label || "Equipo sin nombre"}</strong>
+            </div>
+            <b class="client-activation-status client-activation-status-${activation.status || "active"}">
+              ${getActivationStatusLabel(activation.status)}
+            </b>
+          </div>
+
+          <div class="client-activation-grid">
+            <div>
+              <span>Producto</span>
+              <strong>${activation.product_name || "—"}</strong>
+            </div>
+
+            <div>
+              <span>Licencia</span>
+              <strong>${activation.license_display || "—"}</strong>
+            </div>
+
+            <div>
+              <span>Huella de PC</span>
+              <strong>${activation.machine_fingerprint_hash || "—"}</strong>
+            </div>
+
+            <div>
+              <span>Activada</span>
+              <strong>${activation.activated_at || "—"}</strong>
+            </div>
+
+            <div>
+              <span>Última validación</span>
+              <strong>${activation.last_check_at || "—"}</strong>
+            </div>
+
+            <div>
+              <span>Revocada</span>
+              <strong>${activation.revoked_at || "—"}</strong>
+            </div>
+          </div>
+
+          <p class="client-activation-note">
+            Si cambias de laptop o PC, solicita a soporte liberar la activación anterior.
+          </p>
+        `;
+
+        activationsList.appendChild(item);
+      });
+    };
+
+    const loadActivations = async () => {
+      try {
+        const response = await fetch(`${API_URL}/me/license-activations`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          renderActivations([]);
+          return;
+        }
+
+        renderActivations(data.activations || []);
+      } catch (error) {
+        renderActivations([]);
+      }
+    };
+
     const loadUser = async () => {
       if (!token) {
         window.location.href = "/app/login";
@@ -301,6 +409,7 @@ import Layout from "../../layouts/Layout.astro";
 
         loadOrders();
         loadLicenses();
+        loadActivations();
       } catch (error) {
         loadingState.hidden = true;
         showMessage("No se pudo conectar con la API. Intenta nuevamente.", "error");
@@ -925,6 +1034,123 @@ import Layout from "../../layouts/Layout.astro";
   @media (min-width: 1200px) {
     .dashboard-shell {
       width: min(1320px, 100%) !important;
+    }
+  }
+</style>
+
+
+<style is:global>
+  .activations-card {
+    grid-column: span 2;
+  }
+
+  .client-activations-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  .client-activation-item {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,.13);
+    background:
+      linear-gradient(135deg, rgba(100, 181, 246, .10), rgba(255,255,255,.04)),
+      rgba(255,255,255,.045);
+  }
+
+  .client-activation-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .client-activation-header span,
+  .client-activation-grid span {
+    display: block;
+    color: rgba(255,255,255,.52);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  .client-activation-header strong {
+    display: block;
+    margin-top: 5px;
+    color: #fff;
+    font-size: 18px;
+    line-height: 1.15;
+  }
+
+  .client-activation-status {
+    display: inline-flex;
+    padding: 7px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.78);
+  }
+
+  .client-activation-status-active {
+    background: rgba(35, 213, 120, .14);
+    color: #9ff0c1;
+  }
+
+  .client-activation-status-revoked {
+    background: rgba(255, 71, 87, .14);
+    color: #ffb3ba;
+  }
+
+  .client-activation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .client-activation-grid div {
+    padding: 13px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.055);
+    border: 1px solid rgba(255,255,255,.09);
+    min-width: 0;
+  }
+
+  .client-activation-grid strong {
+    display: block;
+    margin-top: 5px;
+    color: rgba(255,255,255,.92);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  .client-activation-note {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 179, 0, .10);
+    border: 1px solid rgba(255, 179, 0, .15);
+    color: rgba(255,255,255,.75);
+    line-height: 1.45;
+    font-size: 13px;
+  }
+
+  @media (max-width: 980px) {
+    .activations-card {
+      grid-column: span 1;
+    }
+
+    .client-activation-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .client-activation-header {
+      display: grid;
     }
   }
 </style>
