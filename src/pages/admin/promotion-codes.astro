@@ -1,0 +1,708 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Promociones Admin | AzaNexis"
+  description="Administración visual de códigos promocionales AzaNexis."
+>
+  <main class="admin-page">
+    <section class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <span class="eyebrow">AzaNexis Admin</span>
+          <h1>Promociones</h1>
+          <p>
+            Visualiza códigos promocionales, descuentos, límite de usos,
+            redenciones y órdenes generadas con promoción.
+          </p>
+        </div>
+
+        <div class="header-actions">
+          <a href="/">Inicio</a>
+          <a href="/softwares">Catálogo</a>
+          <a href="/admin/dashboard">Dashboard</a>
+          <a href="/admin/orders">Órdenes</a>
+          <a href="/admin/licenses">Licencias</a>
+          <a href="/admin/license-activations">Activaciones</a>
+          <a href="/admin/promotion-codes">Promociones</a>
+          <a href="/admin/users">Usuarios</a>
+          <button id="logoutBtn" type="button">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <section class="tools-card">
+        <label>
+          Buscar promoción
+          <input id="searchInput" type="search" placeholder="Código, producto, estado o descripción..." />
+        </label>
+
+        <button id="searchBtn" type="button">Buscar</button>
+        <button id="clearBtn" type="button">Limpiar</button>
+      </section>
+
+      <section id="loadingState" class="panel-card">
+        Cargando promociones...
+      </section>
+
+      <section id="promoContent" class="promo-grid" hidden></section>
+
+      <section class="redemptions-section">
+        <div class="section-title">
+          <div>
+            <span class="eyebrow">Historial</span>
+            <h2>Redenciones recientes</h2>
+          </div>
+          <p>
+            Aquí aparecen los usuarios que ya usaron un código promocional y la orden generada.
+          </p>
+        </div>
+
+        <div id="redemptionsContent" class="table-card" hidden></div>
+      </section>
+
+      <p id="messageBox" class="message-box" hidden></p>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://nexis-hub-api.azanexis.workers.dev";
+
+    const token = localStorage.getItem("nexishub_admin_token");
+    const loadingState = document.querySelector("#loadingState");
+    const promoContent = document.querySelector("#promoContent");
+    const redemptionsContent = document.querySelector("#redemptionsContent");
+    const messageBox = document.querySelector("#messageBox");
+    const logoutBtn = document.querySelector("#logoutBtn");
+    const searchInput = document.querySelector("#searchInput");
+    const searchBtn = document.querySelector("#searchBtn");
+    const clearBtn = document.querySelector("#clearBtn");
+
+    const statusLabels = {
+      active: "Activo",
+      inactive: "Inactivo",
+      expired: "Expirado",
+    };
+
+    const discountTypeLabels = {
+      percent: "Porcentaje",
+      fixed: "Monto fijo",
+      free: "Gratis",
+    };
+
+    const showMessage = (text, type = "info") => {
+      messageBox.hidden = false;
+      messageBox.textContent = text;
+      messageBox.dataset.type = type;
+    };
+
+    const hideMessage = () => {
+      messageBox.hidden = true;
+      messageBox.textContent = "";
+    };
+
+    const logout = () => {
+      localStorage.removeItem("nexishub_admin_token");
+      localStorage.removeItem("nexishub_admin_user");
+      window.location.href = "/admin/login";
+    };
+
+    const formatMoney = (amount, currency = "MXN") => {
+      const value = Number(amount || 0) / 100;
+      return new Intl.NumberFormat("es-MX", {
+        style: "currency",
+        currency,
+      }).format(value);
+    };
+
+    const formatDiscount = (promo) => {
+      const type = promo.discount_type || "";
+      const value = Number(promo.discount_value || 0);
+
+      if (type === "percent") return `${value}%`;
+      if (type === "fixed") return formatMoney(value);
+      if (type === "free") return "Gratis";
+
+      return "—";
+    };
+
+    const getStatusLabel = (status) => statusLabels[status] || status || "—";
+    const getDiscountTypeLabel = (type) => discountTypeLabels[type] || type || "—";
+
+    logoutBtn.addEventListener("click", logout);
+
+    const renderPromotions = (promotions) => {
+      promoContent.innerHTML = "";
+
+      if (!promotions.length) {
+        promoContent.innerHTML = `
+          <article class="panel-card empty-card">
+            No se encontraron códigos promocionales.
+          </article>
+        `;
+        return;
+      }
+
+      promotions.forEach((promo) => {
+        const maxUses = promo.max_uses ?? "Sin límite";
+        const usedCount = Number(promo.used_count || 0);
+        const redemptionCount = Number(promo.redemption_count || 0);
+
+        const card = document.createElement("article");
+        card.className = "promo-card";
+
+        card.innerHTML = `
+          <div class="promo-card-top">
+            <div>
+              <span class="promo-kicker">Código promocional</span>
+              <h2>${promo.code || "—"}</h2>
+            </div>
+
+            <span class="status status-${promo.status || "active"}">
+              ${getStatusLabel(promo.status)}
+            </span>
+          </div>
+
+          <p class="promo-description">
+            ${promo.description || "Sin descripción."}
+          </p>
+
+          <div class="promo-code-box">
+            <span>Descuento</span>
+            <strong>${formatDiscount(promo)}</strong>
+            <small>${getDiscountTypeLabel(promo.discount_type)}</small>
+          </div>
+
+          <div class="promo-info">
+            <div>
+              <span>Producto</span>
+              <strong>${promo.product_name || "Todos los productos"}</strong>
+              <small>${promo.product_slug || promo.product_id || "Global"}</small>
+            </div>
+
+            <div>
+              <span>Usos</span>
+              <strong>${usedCount} / ${maxUses}</strong>
+              <small>Redenciones registradas: ${redemptionCount}</small>
+            </div>
+
+            <div>
+              <span>Límite por usuario</span>
+              <strong>${promo.per_user_limit ?? 1}</strong>
+              <small>Veces permitidas por cuenta</small>
+            </div>
+
+            <div>
+              <span>Descuento acumulado</span>
+              <strong>${formatMoney(promo.redeemed_discount_total)}</strong>
+              <small>Total otorgado con este código</small>
+            </div>
+
+            <div>
+              <span>Vigencia</span>
+              <strong>${promo.starts_at || "Inicio inmediato"}</strong>
+              <small>Expira: ${promo.expires_at || "Sin expiración"}</small>
+            </div>
+
+            <div>
+              <span>Creado</span>
+              <strong>${promo.created_at || "—"}</strong>
+              <small>Actualizado: ${promo.updated_at || "—"}</small>
+            </div>
+          </div>
+        `;
+
+        promoContent.appendChild(card);
+      });
+    };
+
+    const renderRedemptions = (redemptions) => {
+      if (!redemptions.length) {
+        redemptionsContent.innerHTML = `
+          <div class="empty-table">
+            No hay redenciones registradas.
+          </div>
+        `;
+        return;
+      }
+
+      redemptionsContent.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Orden</th>
+                <th>Descuento</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              ${redemptions.map((item) => {
+                const clientName = `${item.user_first_name || ""} ${item.user_last_name || ""}`.trim();
+
+                return `
+                  <tr>
+                    <td>
+                      <strong>${item.promotion_code || "—"}</strong>
+                      <small>${item.discount_type || "—"} ${item.discount_value || ""}</small>
+                    </td>
+
+                    <td>
+                      <strong>${clientName || item.user_display_name || "—"}</strong>
+                      <small>${item.user_email || "—"}</small>
+                    </td>
+
+                    <td>
+                      <strong>${item.product_name || "—"}</strong>
+                      <small>${item.product_slug || "—"}</small>
+                    </td>
+
+                    <td>
+                      <strong>${item.order_number || "—"}</strong>
+                      <small>${item.order_provider_status || item.order_provider || "—"}</small>
+                    </td>
+
+                    <td>
+                      <strong>${formatMoney(item.discount_amount, item.order_currency)}</strong>
+                      <small>Total orden: ${formatMoney(item.order_total, item.order_currency)}</small>
+                    </td>
+
+                    <td>
+                      <span class="status status-${item.order_status || "pending"}">
+                        ${item.order_status || "—"}
+                      </span>
+                    </td>
+
+                    <td>
+                      <strong>${item.created_at || "—"}</strong>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    };
+
+    const loadPromotions = async () => {
+      if (!token) {
+        window.location.href = "/admin/login";
+        return;
+      }
+
+      const query = searchInput.value.trim();
+
+      const promoUrl = query
+        ? `${API_URL}/admin/promotion-codes?q=${encodeURIComponent(query)}`
+        : `${API_URL}/admin/promotion-codes`;
+
+      const redemptionsUrl = query
+        ? `${API_URL}/admin/promotion-code-redemptions?q=${encodeURIComponent(query)}`
+        : `${API_URL}/admin/promotion-code-redemptions`;
+
+      loadingState.hidden = false;
+      promoContent.hidden = true;
+      redemptionsContent.hidden = true;
+      hideMessage();
+
+      try {
+        const [promoResponse, redemptionsResponse] = await Promise.all([
+          fetch(promoUrl, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          fetch(redemptionsUrl, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
+
+        const promoData = await promoResponse.json();
+        const redemptionsData = await redemptionsResponse.json();
+
+        if (!promoResponse.ok || !promoData.ok || !redemptionsResponse.ok || !redemptionsData.ok) {
+          logout();
+          return;
+        }
+
+        renderPromotions(promoData.promotion_codes || []);
+        renderRedemptions(redemptionsData.redemptions || []);
+
+        loadingState.hidden = true;
+        promoContent.hidden = false;
+        redemptionsContent.hidden = false;
+      } catch (error) {
+        loadingState.hidden = true;
+        showMessage("No se pudo conectar con la API administrativa.", "error");
+      }
+    };
+
+    searchBtn.addEventListener("click", loadPromotions);
+
+    clearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      loadPromotions();
+    });
+
+    searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        loadPromotions();
+      }
+    });
+
+    loadPromotions();
+  </script>
+
+  <style is:global>
+    .admin-page {
+      min-height: 100vh;
+      padding: 42px 20px;
+      background:
+        radial-gradient(circle at top left, rgba(255, 106, 0, .22), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(255, 179, 0, .10), transparent 30%),
+        #07070a;
+      color: #fff;
+    }
+
+    .admin-shell {
+      width: min(1320px, 100%);
+      margin: 0 auto;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 106, 0, .12);
+      color: #ffb36b;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    h1 {
+      margin: 18px 0 0;
+      font-size: clamp(42px, 8vw, 82px);
+      line-height: .9;
+      letter-spacing: -0.06em;
+    }
+
+    h2 {
+      margin: 10px 0 0;
+      font-size: 34px;
+      letter-spacing: -0.05em;
+    }
+
+    .admin-header p,
+    .section-title p {
+      max-width: 760px;
+      margin: 18px 0 0;
+      color: rgba(255,255,255,.72);
+      line-height: 1.7;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      max-width: 760px;
+    }
+
+    .header-actions a,
+    button {
+      padding: 13px 16px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .tools-card,
+    .panel-card,
+    .promo-card,
+    .table-card {
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 28px;
+      background: rgba(15,15,18,.86);
+      box-shadow: 0 24px 80px rgba(0,0,0,.32);
+    }
+
+    .tools-card {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: rgba(255,255,255,.82);
+      font-weight: 900;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 15px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .promo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .promo-card {
+      display: grid;
+      gap: 16px;
+    }
+
+    .promo-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .promo-kicker {
+      display: inline-flex;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(255, 106, 0, .12);
+      color: #ffb36b;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .promo-card h2 {
+      margin: 12px 0 0;
+      font-size: 30px;
+      letter-spacing: -0.04em;
+      overflow-wrap: anywhere;
+    }
+
+    .promo-description {
+      margin: 0;
+      color: rgba(255,255,255,.68);
+      line-height: 1.6;
+    }
+
+    .promo-code-box {
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+    }
+
+    .promo-code-box span,
+    .promo-code-box strong,
+    .promo-code-box small {
+      display: block;
+    }
+
+    .promo-code-box span,
+    .promo-code-box small,
+    .promo-info span,
+    table small {
+      color: rgba(255,255,255,.58);
+    }
+
+    .promo-code-box strong {
+      margin-top: 6px;
+      color: #fff;
+      font-size: 32px;
+      letter-spacing: -0.04em;
+    }
+
+    .promo-code-box small {
+      margin-top: 6px;
+    }
+
+    .promo-info {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .promo-info div {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+    }
+
+    .promo-info span,
+    .promo-info strong,
+    .promo-info small {
+      display: block;
+    }
+
+    .promo-info strong {
+      margin-top: 5px;
+      color: #fff;
+      overflow-wrap: anywhere;
+    }
+
+    .promo-info small {
+      margin-top: 5px;
+      color: rgba(255,255,255,.54);
+      overflow-wrap: anywhere;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 950;
+      white-space: nowrap;
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.78);
+    }
+
+    .status-active,
+    .status-approved {
+      background: rgba(35, 213, 120, .14);
+      color: #9ff0c1;
+    }
+
+    .status-inactive,
+    .status-cancelled,
+    .status-refunded {
+      background: rgba(255, 71, 87, .14);
+      color: #ffb3ba;
+    }
+
+    .status-pending {
+      background: rgba(255, 179, 0, .14);
+      color: #ffe2a8;
+    }
+
+    .redemptions-section {
+      margin-top: 22px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1080px;
+    }
+
+    th,
+    td {
+      padding: 15px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #ffb36b;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    td strong,
+    td small {
+      display: block;
+    }
+
+    td strong {
+      color: #fff;
+    }
+
+    td small {
+      margin-top: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .empty-table,
+    .empty-card {
+      color: rgba(255,255,255,.68);
+      line-height: 1.6;
+    }
+
+    .message-box {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      line-height: 1.5;
+      background: rgba(255,255,255,.08);
+    }
+
+    .message-box[data-type="error"] {
+      background: rgba(255, 71, 87, .14);
+      color: #ffb3ba;
+    }
+
+    @media (max-width: 900px) {
+      .admin-header,
+      .section-title {
+        display: grid;
+      }
+
+      .tools-card,
+      .promo-info {
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</Layout>
