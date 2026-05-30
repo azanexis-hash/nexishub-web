@@ -55,6 +55,48 @@ import Layout from "../../../../layouts/Layout.astro";
             <small id="sessionEmail">—</small>
           </div>
 
+          <div class="promo-box">
+            <label class="promo-toggle">
+              <input id="promoToggle" type="checkbox" />
+              <span>Tengo código de promoción</span>
+            </label>
+
+            <div id="promoFields" class="promo-fields" hidden>
+              <div class="promo-input-row">
+                <input
+                  id="promoCodeInput"
+                  type="text"
+                  placeholder="Ej. ESTUDIANTE100"
+                  autocomplete="off"
+                />
+                <button id="applyPromoBtn" type="button">
+                  Aplicar código
+                </button>
+              </div>
+
+              <small id="promoHelp">
+                Escribe tu código y presiona Aplicar código.
+              </small>
+            </div>
+
+            <div id="promoSummary" class="promo-summary" hidden>
+              <div>
+                <span>Subtotal</span>
+                <strong id="promoSubtotal">$0.00</strong>
+              </div>
+
+              <div>
+                <span>Descuento</span>
+                <strong id="promoDiscount">-$0.00</strong>
+              </div>
+
+              <div>
+                <span>Total final</span>
+                <strong id="promoTotal">$0.00</strong>
+              </div>
+            </div>
+          </div>
+
           <div class="actions">
             <button id="createOrderBtn" type="button" disabled>
               Solicitar compra
@@ -126,6 +168,18 @@ import Layout from "../../../../layouts/Layout.astro";
     const loginLink = document.querySelector("#loginLink");
     const messageBox = document.querySelector("#messageBox");
 
+    const promoToggle = document.querySelector("#promoToggle");
+    const promoFields = document.querySelector("#promoFields");
+    const promoCodeInput = document.querySelector("#promoCodeInput");
+    const applyPromoBtn = document.querySelector("#applyPromoBtn");
+    const promoHelp = document.querySelector("#promoHelp");
+    const promoSummary = document.querySelector("#promoSummary");
+    const promoSubtotal = document.querySelector("#promoSubtotal");
+    const promoDiscount = document.querySelector("#promoDiscount");
+    const promoTotal = document.querySelector("#promoTotal");
+
+    let appliedPromotionCode = "";
+
     const showMessage = (text, type = "info") => {
       messageBox.hidden = false;
       messageBox.textContent = text;
@@ -138,6 +192,81 @@ import Layout from "../../../../layouts/Layout.astro";
         style: "currency",
         currency: currency || "MXN",
       }).format(value);
+    };
+
+    const resetPromotion = () => {
+      appliedPromotionCode = "";
+      promoSummary.hidden = true;
+      promoSubtotal.textContent = "$0.00";
+      promoDiscount.textContent = "-$0.00";
+      promoTotal.textContent = "$0.00";
+      promoHelp.textContent = "Escribe tu código y presiona Aplicar código.";
+      promoHelp.dataset.type = "info";
+    };
+
+    const validatePromotionCode = async () => {
+      const code = String(promoCodeInput.value || "").trim().toUpperCase();
+
+      if (!token) {
+        showMessage("Para usar un código de promoción necesitas iniciar sesión.", "error");
+        return;
+      }
+
+      if (!code) {
+        resetPromotion();
+        promoHelp.textContent = "Escribe un código de promoción.";
+        promoHelp.dataset.type = "error";
+        return;
+      }
+
+      applyPromoBtn.disabled = true;
+      applyPromoBtn.textContent = "Validando...";
+      promoHelp.textContent = "Validando código de promoción...";
+      promoHelp.dataset.type = "info";
+
+      try {
+        const response = await fetch(`${API_URL}/promotion-codes/validate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            product_slug: "nutriplan-nexis",
+            code,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          appliedPromotionCode = "";
+          promoSummary.hidden = true;
+          promoHelp.textContent = data.message || "El código no es válido.";
+          promoHelp.dataset.type = "error";
+          return;
+        }
+
+        appliedPromotionCode = data.code;
+        promoSubtotal.textContent = formatMoney(data.subtotal, data.currency);
+        promoDiscount.textContent = `-${formatMoney(data.discount, data.currency)}`;
+        promoTotal.textContent = formatMoney(data.total, data.currency);
+        promoSummary.hidden = false;
+        promoHelp.textContent = `Código aplicado: ${data.code}`;
+        promoHelp.dataset.type = "success";
+
+        if (Number(data.total || 0) === 0) {
+          createOrderBtn.textContent = "Crear orden gratis";
+        }
+      } catch (error) {
+        appliedPromotionCode = "";
+        promoSummary.hidden = true;
+        promoHelp.textContent = "No se pudo validar el código. Intenta nuevamente.";
+        promoHelp.dataset.type = "error";
+      } finally {
+        applyPromoBtn.disabled = false;
+        applyPromoBtn.textContent = "Aplicar código";
+      }
     };
 
     const validateSession = async () => {
@@ -198,6 +327,7 @@ import Layout from "../../../../layouts/Layout.astro";
           },
           body: JSON.stringify({
             product_slug: "nutriplan-nexis",
+            ...(appliedPromotionCode ? { promotion_code: appliedPromotionCode } : {}),
           }),
         });
 
@@ -210,9 +340,10 @@ import Layout from "../../../../layouts/Layout.astro";
 
         const order = data.order;
         const total = formatMoney(order.total, order.currency);
+        const discount = formatMoney(order.discount, order.currency);
 
         showMessage(
-          `Solicitud creada: ${order.order_number}. Estado: ${order.status}. Total: ${total}.`,
+          `Solicitud creada: ${order.order_number}. Estado: ${order.status}. Descuento: ${discount}. Total: ${total}.`,
           "success"
         );
 
@@ -223,6 +354,28 @@ import Layout from "../../../../layouts/Layout.astro";
         createOrderBtn.textContent = "Solicitar compra";
       }
     };
+
+    promoToggle.addEventListener("change", () => {
+      promoFields.hidden = !promoToggle.checked;
+
+      if (!promoToggle.checked) {
+        promoCodeInput.value = "";
+        resetPromotion();
+        createOrderBtn.textContent = "Solicitar compra";
+      }
+    });
+
+    promoCodeInput.addEventListener("input", () => {
+      const cleanValue = promoCodeInput.value.toUpperCase();
+      promoCodeInput.value = cleanValue;
+
+      if (appliedPromotionCode && cleanValue !== appliedPromotionCode) {
+        resetPromotion();
+        createOrderBtn.textContent = "Solicitar compra";
+      }
+    });
+
+    applyPromoBtn.addEventListener("click", validatePromotionCode);
 
     createOrderBtn.addEventListener("click", createOrder);
 
@@ -320,7 +473,8 @@ import Layout from "../../../../layouts/Layout.astro";
 
     .price-box,
     .notice-box,
-    .session-box {
+    .session-box,
+    .promo-box {
       margin-top: 22px;
       padding: 18px;
       border-radius: 20px;
@@ -362,6 +516,82 @@ import Layout from "../../../../layouts/Layout.astro";
     .session-box small {
       margin-top: 6px;
       overflow-wrap: anywhere;
+    }
+
+    .promo-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .promo-toggle input {
+      width: 18px;
+      height: 18px;
+      accent-color: #ff8a00;
+    }
+
+    .promo-fields {
+      margin-top: 16px;
+    }
+
+    .promo-input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .promo-input-row input {
+      min-width: 0;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color: #fff;
+      font-weight: 900;
+      text-transform: uppercase;
+      outline: none;
+    }
+
+    .promo-input-row input::placeholder {
+      color: rgba(255,255,255,.42);
+    }
+
+    #promoHelp {
+      display: block;
+      margin-top: 10px;
+      color: rgba(255,255,255,.58);
+      line-height: 1.45;
+    }
+
+    #promoHelp[data-type="success"] {
+      color: #9ff0c1;
+    }
+
+    #promoHelp[data-type="error"] {
+      color: #ffb3ba;
+    }
+
+    .promo-summary {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    .promo-summary div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      color: rgba(255,255,255,.68);
+    }
+
+    .promo-summary strong {
+      color: #fff;
     }
 
     .notice-box strong {
@@ -456,6 +686,14 @@ import Layout from "../../../../layouts/Layout.astro";
       .buy-grid,
       .faq-grid {
         grid-template-columns: 1fr;
+      }
+
+      .promo-input-row {
+        grid-template-columns: 1fr;
+      }
+
+      .promo-input-row button {
+        width: 100%;
       }
     }
   </style>
